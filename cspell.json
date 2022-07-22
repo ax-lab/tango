@@ -1,0 +1,19 @@
+{
+	"version": "0.2",
+	"language": "en",
+	"words": [
+	],
+	"flagWords": ["teh"],
+	"ignorePaths": [
+		// ignore config and third-party files
+		".vscode/**",
+		"cspell.json",
+		"*.lock",
+		"node_modules/**",
+		"package-lock.json"
+	],
+	"ignoreRegExpList": [
+		// ignore word terms quoted by backticks
+		"`[^\\s]+`"
+	]
+}

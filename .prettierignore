@@ -1,0 +1,11 @@
+# ignored config files
+package.json
+cspell.json
+
+# leave markdown formatting to the writer
+*.md
+
+# ignore any libraries and output files
+node_modules
+target
+build
