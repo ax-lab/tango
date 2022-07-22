@@ -1,3 +1,3 @@
 # tango
 
-Japanese dictionary and word manager.
+Japanese dictionary and vocabulary manager.

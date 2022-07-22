@@ -1,0 +1,31 @@
+{
+	"include": [
+		"tango-web/**/*.ts",
+		"tango-web/**/*.tsx"
+	],
+
+	"compilerOptions": {
+		// Stylize errors and messages using color and context
+		"pretty": true,
+		// Enable incremental compilation
+		"incremental": true,
+
+		// Redirect output structure to the directory.
+		"outDir": "./build",
+
+		// Specify library files to be included in the compilation.
+		"lib": ["es2017", "dom", "es2019", "es2020"],
+		// Specify list of directories for type definition files to be included.
+		"typeRoots": ["node_modules/@types"],
+
+		// Skip type checking of declaration files.
+		"skipLibCheck": true,
+
+		"jsx": "react-jsx",
+		"jsxImportSource": "preact",
+
+		// Enable all strict type-checking options.
+		"strict": true,
+		"forceConsistentCasingInFileNames": true
+	}
+}

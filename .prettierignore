@@ -1,6 +1,7 @@
 # ignored config files
-package.json
 cspell.json
+package.json
+tsconfig.json
 
 # leave markdown formatting to the writer
 *.md
