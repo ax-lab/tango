@@ -72,6 +72,11 @@ module.exports = (env, args) => {
 				serveIndex: true,
 				watch: true,
 			},
+			proxy: {
+				'/api': {
+					target: 'http://localhost:29801',
+				},
+			},
 		},
 	};
 

@@ -2,9 +2,13 @@
 	"version": "0.2",
 	"language": "en",
 	"words": [
-		"RocknRoll"
+		"listenfd",
+		"RocknRoll",
+		"systemfd"
 	],
-	"flagWords": ["teh"],
+	"flagWords": [
+		"teh"
+	],
 	"ignorePaths": [
 		// ignore config and third-party files
 		".vscode/**",
