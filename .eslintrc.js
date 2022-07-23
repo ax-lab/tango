@@ -11,7 +11,19 @@ module.exports = {
 		browser: true,
 		jest: true,
 	},
-	ignorePatterns: ['node_modules', 'build', 'coverage', 'dist', '*.config.js', '.*.js'],
+	ignorePatterns: [
+		// ignore third-party and build dirs
+		'node_modules',
+		'build',
+		'coverage',
+		'dist',
+		// ignore configuration files
+		'*.config.js',
+		'*.config.local.js',
+		'.*.js',
+		// ignore the runner script
+		'serve.js',
+	],
 	plugins: ['@typescript-eslint', 'eslint-comments', 'jest', 'only-warn'],
 	extends: [
 		'eslint:recommended',

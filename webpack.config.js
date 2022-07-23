@@ -4,7 +4,6 @@ const OUTPUT = path.resolve(__dirname, 'build');
 
 const DIR = `./tango-web`;
 const APP = `${DIR}/index.ts`;
-const PORT = 29899;
 
 const PreactRefreshPlugin = require('@prefresh/webpack');
 
@@ -53,8 +52,13 @@ const config = {
 	},
 };
 
-module.exports = (env, args) => {
-	const { server = false } = env || {};
+module.exports = (env, args = {}) => {
+	const { server = false, host = 'localhost', port = 0, api = 0 } = env || {};
+	const proxy = api
+		? {
+				'/api': { target: `http://127.0.0.1:${api}` },
+		  }
+		: undefined;
 	const app = {
 		entry: server ? ['webpack-dev-server/client', APP] : APP,
 		devtool: args.mode == 'production' ? undefined : 'inline-source-map',
@@ -64,19 +68,15 @@ module.exports = (env, args) => {
 			publicPath: '/',
 		},
 		devServer: {
-			host: '0.0.0.0',
 			hot: true,
-			port: PORT,
+			host: host,
+			port: port,
 			static: {
 				directory: `${DIR}/public`,
 				serveIndex: true,
 				watch: true,
 			},
-			proxy: {
-				'/api': {
-					target: 'http://localhost:29801',
-				},
-			},
+			proxy: proxy,
 		},
 	};
 

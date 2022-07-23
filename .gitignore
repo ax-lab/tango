@@ -1,3 +1,9 @@
+# Local development configuration file (see `app.config.js`).
+app.config.local.js
+
+# Trigger for serve.js recompilation
+.serve-trigger
+
 # Compile compiled files and executables from Cargo
 target/
 

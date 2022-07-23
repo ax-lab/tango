@@ -16,7 +16,7 @@ async fn main() {
 	info!("starting up server...");
 
 	let api = warp::path!("api" / ..);
-	let hello_name = warp::path!("hello" / String).map(|name| format!("Hello, {}!!!", name));
+	let hello_name = warp::path!("hello" / String).map(|name| format!("Hello, {}!", name));
 	let hello_stranger = warp::path!("hello").map(|| "Hello, stranger!");
 	let hello = api.and(hello_name.or(hello_stranger));
 
@@ -38,10 +38,10 @@ async fn main() {
 	};
 
 	let server = server.serve(make_service);
-	info!(
-		"listening at {}, use Ctrl+C to shutdown...",
-		server.local_addr()
-	);
+
+	let addr = server.local_addr();
+	info!("listening at {}...", addr);
+	info!("server-start-port={}", addr.port());
 
 	let server = server.with_graceful_shutdown(async {
 		tokio::signal::ctrl_c()
