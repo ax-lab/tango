@@ -1,6 +1,10 @@
-use std::time::Duration;
+mod common;
+use std::error::Error;
 
-use reqwest::{blocking::*, Method, Url};
+use assert_json_diff::*;
+use common::*;
+
+use serde_json::json;
 use testable::*;
 
 #[test]
@@ -20,62 +24,40 @@ fn server_accepts_connections() {
 	assert_eq!(response.text().unwrap(), "pong");
 }
 
-fn test_request(method: Method, path: &str) -> Response {
-	test_request_with_config(method, path, |_| {})
+#[test]
+fn server_accepts_graphql() -> Result<(), Box<dyn Error>> {
+	let response = test_request_with_config(Method::POST, "api/query", |request| {
+		let headers = request.headers_mut();
+		headers.append(CONTENT_TYPE, "application/graphql".parse().unwrap());
+		request.body_mut().replace(Body::from(r"query { appName }"));
+	});
+	assert_eq!(response.status(), 200);
+	assert!(response
+		.headers()
+		.get(CONTENT_TYPE)
+		.unwrap()
+		.to_str()?
+		.contains("application/json"));
+	let response = response.text()?;
+	let response = serde_json::from_str::<serde_json::Value>(&response)?;
+	let expected = json!({ "data": { "appName": "Tango" } });
+	assert_json_include!(actual: response, expected: expected);
+
+	Ok(())
 }
 
-fn test_request_with_config<F: FnOnce(&mut Request)>(
-	method: Method,
-	path: &str,
-	config: F,
-) -> Response {
-	let (mut cleanup, get_port) = spawn_server();
-	defer!(cleanup());
+#[test]
+fn server_accepts_graphiql() -> Result<(), Box<dyn Error>> {
+	let response = test_request(Method::GET, "api/graphql");
+	assert_eq!(response.status(), 200);
+	assert!(response
+		.headers()
+		.get(CONTENT_TYPE)
+		.unwrap()
+		.to_str()?
+		.contains("text/html"));
+	let response = response.text()?;
+	assert!(response.contains("GraphiQL"));
 
-	let port =
-		panic_after(Duration::from_millis(100), get_port).expect("server did not return a port");
-
-	let url = Url::parse(&format!("http://127.0.0.1:{}/{}", port, path)).unwrap();
-	let mut request = Request::new(method, url);
-	config(&mut request);
-
-	let client = ClientBuilder::new()
-		.timeout(Duration::from_millis(200))
-		.build()
-		.unwrap();
-	client.execute(request).unwrap()
-}
-
-fn spawn_server() -> (impl FnMut(), impl FnOnce() -> Option<u16>) {
-	use std::io::*;
-	use std::process::*;
-
-	use regex::Regex;
-
-	let mut cmd = tux::get_bin("tango-srv");
-	let mut child = cmd
-		.stdout(Stdio::null())
-		.stderr(Stdio::piped())
-		.spawn()
-		.unwrap();
-	let output = child.stderr.take().unwrap();
-	let re = Regex::new(r"server-start-port=(\d+)").unwrap();
-	let get_port = move || {
-		let output = BufReader::new(output);
-		for line in output.lines() {
-			let line = line.expect("read output line failed");
-			if let Some(captures) = re.captures(&line) {
-				let port = captures.get(1).unwrap().as_str();
-				let port = port.parse::<u16>().unwrap();
-				return Some(port);
-			}
-		}
-		None
-	};
-
-	let kill_child = move || {
-		let _ = child.kill();
-	};
-
-	(kill_child, get_port)
+	Ok(())
 }
