@@ -2,11 +2,15 @@
 	"version": "0.2",
 	"language": "en",
 	"words": [
+		"flate",
 		"graphiql",
+		"jlpt",
+		"jmdict",
 		"listenfd",
 		"RocknRoll",
 		"serde",
-		"systemfd"
+		"systemfd",
+		"unsync"
 	],
 	"flagWords": [
 		"teh"
@@ -17,7 +21,8 @@
 		"cspell.json",
 		"*.lock",
 		"node_modules/**",
-		"package-lock.json"
+		"package-lock.json",
+		"vendor/**"
 	],
 	"ignoreRegExpList": [
 		// ignore word terms quoted by backticks
