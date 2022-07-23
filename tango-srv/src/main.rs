@@ -16,9 +16,10 @@ async fn main() {
 	info!("starting up server...");
 
 	let api = warp::path!("api" / ..);
+	let ping = warp::path!("ping").map(|| "pong");
 	let hello_name = warp::path!("hello" / String).map(|name| format!("Hello, {}!", name));
 	let hello_stranger = warp::path!("hello").map(|| "Hello, stranger!");
-	let hello = api.and(hello_name.or(hello_stranger));
+	let hello = api.and(ping.or(hello_name).or(hello_stranger));
 
 	let routes = hello;
 
