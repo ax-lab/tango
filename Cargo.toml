@@ -5,3 +5,8 @@ members = [
 	"import-data",
 	"testable"
 ]
+
+# All dependencies (but not this crate itself or any workspace member)
+# will be compiled with optimization. This includes build dependencies.
+[profile.dev.package."*"]
+opt-level = 3
