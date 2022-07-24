@@ -628,6 +628,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "import"
+version = "0.1.0"
+dependencies = [
+ "import-data",
+]
+
+[[package]]
 name = "import-data"
 version = "0.1.0"
 dependencies = [

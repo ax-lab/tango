@@ -68,8 +68,8 @@ start('systemfd', [
 	'--no-gitignore',
 	'-w',
 	`${trigger_file}`,
-	'-x',
-	'run',
+	'-s',
+	'cargo run --bin tango-srv',
 ]);
 
 let webpackStarted = false;
