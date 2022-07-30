@@ -26,6 +26,8 @@
 	],
 	"ignoreRegExpList": [
 		// ignore word terms quoted by backticks
-		"`[^\\s]+`"
+		"`[^\\s]+`",
+		// ignore Unicode escape codes
+		"\\\\u(\\{[0-9a-fA-F]+\\}|[0-9a-fA-F]+)"
 	]
 }

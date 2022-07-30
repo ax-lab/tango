@@ -7,6 +7,8 @@ pub use paths::*;
 
 pub mod jmdict;
 
+pub mod xml;
+
 /// Finds the absolute path for a file or subfolder inside the vendor data
 /// folder.
 pub fn get_path_in_vendor_data<P: AsRef<Path>>(subpath: P) -> Option<PathBuf> {
