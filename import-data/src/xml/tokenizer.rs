@@ -29,12 +29,43 @@ impl<T: Stream> Tokenizer<T> {
 		self.cursor.span = span;
 	}
 
+	/// Read a valid XML name.
 	pub fn read_name(&mut self) -> Option<Span> {
 		self.read_if_while(chars::is_name_start, chars::is_name)
 	}
 
+	/// Read a chunk of a quoted XML literal value (i.e., the value between
+	/// either `"` or `'`).
+	///
+	/// This method is meant for incremental parsing of a literal, so it will
+	/// not read some special characters, even if they are allowed in some
+	/// literal contexts. Characters that are not read by this:
+	///
+	/// - Quotation marks, since those depend on the opening quotation mark
+	///   that was used.
+	/// - The `<` character which is not allowed on attributes.
+	/// - The `%` and `&` characters which are part of entity references.
+	///
+	pub fn read_literal_value_chunk(&mut self) -> Option<Span> {
+		self.read_if(|c| !matches!(c, '"' | '\'' | '<' | '%' | '&'))
+	}
+
 	pub fn peek_char(&mut self) -> Option<char> {
 		self.input.peek_char(&mut self.state)
+	}
+
+	pub fn read_if<P>(&mut self, predicate: P) -> Option<Span>
+	where
+		P: Fn(char) -> bool,
+	{
+		let mut span = self.cursor.span;
+		self.skip_chars(predicate);
+		span.len = self.cursor.span.pos - span.pos;
+		if span.len > 0 {
+			Some(span)
+		} else {
+			None
+		}
 	}
 
 	fn read_if_while<PI, PW>(&mut self, predicate_if: PI, predicate_while: PW) -> Option<Span>
@@ -43,7 +74,7 @@ impl<T: Stream> Tokenizer<T> {
 		PW: Fn(char) -> bool,
 	{
 		if let Some(char) = self.peek_char() {
-			if predicate_if(char) {
+			if chars::is_valid(char) && predicate_if(char) {
 				let mut span = self.cursor.span;
 				self.skip_chars(predicate_while);
 				span.len = self.cursor.span.pos - span.pos;
@@ -58,7 +89,7 @@ impl<T: Stream> Tokenizer<T> {
 		P: Fn(char) -> bool,
 	{
 		while let Some(char) = self.peek_char() {
-			if predicate(char) {
+			if chars::is_valid(char) && predicate(char) {
 				self.read_char();
 			} else {
 				break;
@@ -104,33 +135,133 @@ mod tests {
 	/// Helper macro to test read methods
 	macro_rules! check_read {
 		($expr:ident => $($tail:tt)*) => {
-			let header = concat!(concat!("Tokenizer::", stringify!($expr), ""));
-			check_read!(impl: header, |t| t.$expr() => $($tail)*);
+			let _header = concat!(concat!("Tokenizer::", stringify!($expr), ""));
+			check_read!(impl: _header, |t| t.$expr() => $($tail)*);
+		};
+
+		(| $id:ident | $expr:expr => $($tail:tt)*) => {
+			let _header = concat!(
+				concat!(
+					concat!("<< |",
+						concat!(stringify!($id), ": Tokenizer| ")),
+					stringify!($expr), " >>"));
+			check_read!(impl: _header, |$id| $expr => $($tail)*);
 		};
 
 		(impl: $header:ident, $expr:expr => ) => {};
 
 		(impl: $header:ident, $expr:expr => $text:literal, $($tail:tt)*) => {
-			let header = format!("{}({})", $header, stringify!($text));
-			helper::check_read_full($text, $expr, &header);
+			let _header = format!("{}({})", $header, stringify!($text));
+			helper::check_read_full($text, $expr, &_header);
 			check_read!(impl: $header, $expr => $($tail)*);
 		};
 
 		(impl: $header:ident, $expr:expr => ! $text:literal, $($tail:tt)*) => {
-			let header = format!("{}(!{})", $header, stringify!($text));
-			helper::check_read_fail($text, $expr, &header);
+			let _header = format!("{}(!{})", $header, stringify!($text));
+			helper::check_read_fail($text, $expr, &_header);
 			check_read!(impl: $header, $expr => $($tail)*);
 		};
 
 		(impl: $header:ident, $expr:expr => $text:literal in $input:literal, $($tail:tt)*) => {
-			let header = format!("{}({} in {})", $header, stringify!($text), stringify!($input));
-			helper::check_read_partial($text, $input, $expr, &header);
+			let _header = format!("{}({} in {})", $header, stringify!($text), stringify!($input));
+			helper::check_read_partial($text, $input, $expr, &_header);
 			check_read!(impl: $header, $expr => $($tail)*);
 		};
 	}
 
 	#[test]
-	fn parse_name() {
+	fn does_not_read_invalid() {
+		check_read!(
+			|t| t.read_if(|_| true) =>
+
+			!"\u{0000}",
+			!"\u{0001}",
+			!"\u{0002}",
+			!"\u{0003}",
+			!"\u{0004}",
+			!"\u{0005}",
+			!"\u{0006}",
+			!"\u{0007}",
+			!"\u{0008}",
+			!"\u{000B}",
+			!"\u{000C}",
+			!"\u{000E}",
+			!"\u{000F}",
+
+			!"\u{001A}",
+			!"\u{001F}",
+
+			!"\u{FFFE}",
+			!"\u{FFFF}",
+
+			"abc" in "abc\u{0000}",
+			"abc" in "abc\u{0001}",
+			"abc" in "abc\u{0002}",
+			"abc" in "abc\u{0003}",
+			"abc" in "abc\u{0004}",
+			"abc" in "abc\u{0005}",
+			"abc" in "abc\u{0006}",
+			"abc" in "abc\u{0007}",
+			"abc" in "abc\u{0008}",
+			"abc" in "abc\u{000B}",
+			"abc" in "abc\u{000C}",
+			"abc" in "abc\u{000E}",
+			"abc" in "abc\u{000F}",
+
+			"abc" in "abc\u{001A}",
+			"abc" in "abc\u{001F}",
+
+			"abc" in "abc\u{FFFE}",
+			"abc" in "abc\u{FFFF}",
+		);
+
+		check_read!(
+			|t| t.read_if_while(|_| true, |_| true) =>
+
+			!"\u{0000}",
+			!"\u{0001}",
+			!"\u{0002}",
+			!"\u{0003}",
+			!"\u{0004}",
+			!"\u{0005}",
+			!"\u{0006}",
+			!"\u{0007}",
+			!"\u{0008}",
+			!"\u{000B}",
+			!"\u{000C}",
+			!"\u{000E}",
+			!"\u{000F}",
+
+			!"\u{001A}",
+			!"\u{001F}",
+
+			!"\u{FFFE}",
+			!"\u{FFFF}",
+
+			"abc" in "abc\u{0000}",
+			"abc" in "abc\u{0001}",
+			"abc" in "abc\u{0002}",
+			"abc" in "abc\u{0003}",
+			"abc" in "abc\u{0004}",
+			"abc" in "abc\u{0005}",
+			"abc" in "abc\u{0006}",
+			"abc" in "abc\u{0007}",
+			"abc" in "abc\u{0008}",
+			"abc" in "abc\u{000B}",
+			"abc" in "abc\u{000C}",
+			"abc" in "abc\u{000E}",
+			"abc" in "abc\u{000F}",
+
+			"abc" in "abc\u{001A}",
+			"abc" in "abc\u{001F}",
+
+			"abc" in "abc\u{FFFE}",
+			"abc" in "abc\u{FFFF}",
+		);
+	}
+
+	#[test]
+	fn reads_name() {
 		check_read!(
 			read_name =>
 			"a",
@@ -146,6 +277,42 @@ mod tests {
 			!" ",
 			!"123",
 			"abc" in "abc\u{037E}123",
+		);
+	}
+
+	#[test]
+	fn reads_literal_value() {
+		check_read!(
+			read_literal_value_chunk =>
+
+			// basic values
+			"abc",
+			"abc 123",
+			"1\n2\r3\r\n4",
+			"---",
+
+			!"",     // end of input
+
+			// the `<`, `'`, `"` are allowed in some contexts, but must be
+			// parsed separately
+			!"<",
+			!"'",
+			!"\"",
+			"abc" in "abc<",
+			"abc" in "abc'",
+			"abc" in "abc\"",
+
+			// similarly as above for `%` and `&` entity references
+			!"%",
+			!"&",
+			"abc" in "abc<",
+			"abc" in "abc&",
+
+			// a stray `;` should be parsed normally
+			"abc;def",
+
+			// extra symbols that should be accepted
+			"-()+,./:=?;!*#@$_\\",
 		);
 	}
 
