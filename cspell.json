@@ -7,8 +7,10 @@
 		"jlpt",
 		"jmdict",
 		"listenfd",
+		"PCDATA",
 		"RocknRoll",
 		"serde",
+		"stretchr",
 		"systemfd",
 		"unsync"
 	],

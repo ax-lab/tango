@@ -2,8 +2,6 @@
 
 members = [
 	"tango-srv",
-	"import-data",
-	"import",
 	"testable"
 ]
 
