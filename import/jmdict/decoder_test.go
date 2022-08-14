@@ -121,7 +121,7 @@ func TestDecoderReadsEntries(t *testing.T) {
 	checkEOF()
 }
 
-func TestParsesCustomEntities(t *testing.T) {
+func TestDecoderParsesCustomEntities(t *testing.T) {
 	test := require.New(t)
 
 	input := openXML(`
@@ -179,7 +179,7 @@ func TestParsesCustomEntities(t *testing.T) {
 	test.Equal(tags, input.Tags)
 }
 
-func TestParsesRealFile(t *testing.T) {
+func TestDecoderParsesLoadedFile(t *testing.T) {
 	test := require.New(t)
 
 	input, err := jmdict.Load(jmdict.DefaultFilePath)
@@ -191,6 +191,61 @@ func TestParsesRealFile(t *testing.T) {
 	test.NotNil(entry)
 	test.True(entry.Sequence >= 1000000)
 	test.NotEmpty(decoder.Tags)
+}
+
+func TestDecoderParsesFullEntryData(t *testing.T) {
+	const entriesToLoad = 1000
+
+	test := require.New(t)
+
+	input, err := jmdict.Load(jmdict.DefaultFilePath)
+	test.NoError(err)
+
+	var entries []*jmdict.Entry
+	decoder := jmdict.NewDecoder(input)
+	for i := 0; i < entriesToLoad; i++ {
+		entry, err := decoder.ReadEntry()
+		test.NoError(err)
+		test.NotNil(entry)
+		entries = append(entries, entry)
+	}
+
+	checkAny := func(name string, check func(entry *jmdict.Entry) bool) {
+		for _, entry := range entries {
+			if check(entry) {
+				return
+			}
+		}
+		test.FailNow("check any failed", "assertion `%s` did not match any of the %d entries", name, len(entries))
+	}
+
+	checkAny("parses kanji", func(entry *jmdict.Entry) bool {
+		if len(entry.Kanji) == 0 {
+			return false
+		}
+		for _, it := range entry.Kanji {
+			test.NotEmpty(it.Text)
+		}
+		return true
+	})
+
+	checkAny("parses kanji info", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Kanji {
+			if it.Info != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses kanji priority", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Kanji {
+			if it.Priority != "" {
+				return true
+			}
+		}
+		return false
+	})
 }
 
 func openXML(input string) *jmdict.Decoder {
