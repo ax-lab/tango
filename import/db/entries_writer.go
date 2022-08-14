@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/ax-lab/tango/import/jmdict"
 	_ "github.com/mattn/go-sqlite3"
@@ -13,8 +12,6 @@ type EntriesWriter struct {
 }
 
 func NewEntriesWriter(outputFile string) (*EntriesWriter, error) {
-	fmt.Println(outputFile)
-
 	db, err := sql.Open("sqlite3", outputFile)
 	if err != nil {
 		return nil, err

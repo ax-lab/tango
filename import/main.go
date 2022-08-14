@@ -24,7 +24,7 @@ func main() {
 		ExitWithError("invalid arguments: missing output directory")
 	}
 
-	fmt.Printf("Importing dictionary data to `%s`...\n\n", outputDir)
+	fmt.Printf("Importing dictionary data to `%s`...\n", outputDir)
 
 	if err := os.MkdirAll(outputDir, os.ModePerm); err != nil {
 		ExitWithError("failed to create output directory: %v", err)
@@ -48,7 +48,7 @@ func main() {
 	}
 
 	opImportEntries.Complete()
-	fmt.Printf("=== Loaded %d entries", len(entries))
+	fmt.Printf("... Loaded %d entries\n", len(entries))
 
 	opWriteEntries := Start("writing " + EntriesDB)
 	if db, dbErr := db.NewEntriesWriter(path.Join(outputDir, EntriesDB)); dbErr != nil {
@@ -68,7 +68,7 @@ type Timer struct {
 }
 
 func Start(name string) Timer {
-	fmt.Printf("--> Started %s...\n", name)
+	fmt.Printf("\n--> Started %s...\n", name)
 	return Timer{name, time.Now()}
 }
 
