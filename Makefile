@@ -1,9 +1,9 @@
-.PHONY: run test import
+.PHONY: run test import test-import
 
 run:
 	@node serve.js
 
-test:
+test: test-import
 	@echo
 	@echo ===============================================
 	@echo Backend tests
@@ -18,6 +18,7 @@ test:
 	@echo
 	@npm test
 
+test-import:
 	@echo
 	@echo ===============================================
 	@echo Import tests
@@ -26,4 +27,4 @@ test:
 	@go test ./import/...
 
 import:
-	@go run import/main.go
+	@go run import/main.go -output=data

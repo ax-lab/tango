@@ -1,3 +1,6 @@
+# Imported dictionary data
+data/
+
 # Local development configuration file (see `app.config.js`).
 app.config.local.js
 
