@@ -20,8 +20,10 @@ func TestEntryReadsKanji(t *testing.T) {
 			</k_ele>
 			<k_ele>
 				<keb>kanji 2</keb>
-				<ke_inf>info2</ke_inf>
-				<ke_pri>news2</ke_pri>
+				<ke_inf>info2a</ke_inf>
+				<ke_inf>info2b</ke_inf>
+				<ke_pri>news2a</ke_pri>
+				<ke_pri>news2b</ke_pri>
 			</k_ele>
 		</entry>`)
 
@@ -30,13 +32,13 @@ func TestEntryReadsKanji(t *testing.T) {
 		Kanji: []jmdict.EntryKanji{
 			{
 				Text:     "kanji 1",
-				Info:     "info1",
-				Priority: "news1",
+				Info:     []string{"info1"},
+				Priority: []string{"news1"},
 			},
 			{
 				Text:     "kanji 2",
-				Info:     "info2",
-				Priority: "news2",
+				Info:     []string{"info2a", "info2b"},
+				Priority: []string{"news2a", "news2b"},
 			},
 		},
 	}

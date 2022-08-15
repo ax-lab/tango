@@ -7,7 +7,7 @@ type Entry struct {
 }
 
 type EntryKanji struct {
-	Text     string `xml:"keb"`
-	Info     string `xml:"ke_inf"`
-	Priority string `xml:"ke_pri"`
+	Text     string   `xml:"keb"`
+	Info     []string `xml:"ke_inf"`
+	Priority []string `xml:"ke_pri"`
 }

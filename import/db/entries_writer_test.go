@@ -32,12 +32,13 @@ func TestEntriesWriterFailsOnInvalidInsert(t *testing.T) {
 
 func TestEntriesWriterExportsEntries(t *testing.T) {
 	testData(t,
-		func(db *db.EntriesWriter) {
-			db.WriteEntries([]*jmdict.Entry{
+		func(test *require.Assertions, db *db.EntriesWriter) {
+			err := db.WriteEntries([]*jmdict.Entry{
 				{Sequence: 1001},
 				{Sequence: 1002},
 				{Sequence: 1003},
 			})
+			test.NoError(err)
 		},
 		func(test *require.Assertions, db *sql.DB) {
 			expected := []Data{
@@ -53,8 +54,8 @@ func TestEntriesWriterExportsEntries(t *testing.T) {
 
 func TestEntriesWriterExportsKanji(t *testing.T) {
 	testData(t,
-		func(db *db.EntriesWriter) {
-			db.WriteEntries([]*jmdict.Entry{
+		func(test *require.Assertions, db *db.EntriesWriter) {
+			err := db.WriteEntries([]*jmdict.Entry{
 				{
 					Sequence: 1001,
 					Kanji: []jmdict.EntryKanji{
@@ -66,13 +67,13 @@ func TestEntriesWriterExportsKanji(t *testing.T) {
 					Kanji: []jmdict.EntryKanji{
 						{
 							Text:     "kanji 2a",
-							Info:     "info 2a",
-							Priority: "priority 2a",
+							Info:     []string{"info 2a"},
+							Priority: []string{"priority 2a"},
 						},
 						{
 							Text:     "kanji 2b",
-							Info:     "info 2b",
-							Priority: "priority 2b",
+							Info:     []string{"info 2b", "x"},
+							Priority: []string{"priority 2b", "y"},
 						},
 					},
 				},
@@ -80,6 +81,7 @@ func TestEntriesWriterExportsKanji(t *testing.T) {
 					Sequence: 1003,
 				},
 			})
+			test.NoError(err)
 		},
 		func(test *require.Assertions, db *sql.DB) {
 			expected := []Data{
@@ -101,8 +103,8 @@ func TestEntriesWriterExportsKanji(t *testing.T) {
 					"sequence": int64(1002),
 					"position": int64(1),
 					"text":     "kanji 2b",
-					"info":     "info 2b",
-					"priority": "priority 2b",
+					"info":     "info 2b\tx",
+					"priority": "priority 2b\ty",
 				},
 			}
 			actual := testQuery(test, db, "SELECT sequence, position, text, info, priority FROM entries_kanji")
@@ -111,7 +113,7 @@ func TestEntriesWriterExportsKanji(t *testing.T) {
 	)
 }
 
-func testData(t *testing.T, prepare func(db *db.EntriesWriter), eval func(test *require.Assertions, db *sql.DB)) {
+func testData(t *testing.T, prepare func(test *require.Assertions, db *db.EntriesWriter), eval func(test *require.Assertions, db *sql.DB)) {
 	testTempDB(t, func(test *require.Assertions, dbFile string) {
 		func() {
 			db, dbErr := db.NewEntriesWriter(dbFile)
@@ -120,7 +122,7 @@ func testData(t *testing.T, prepare func(db *db.EntriesWriter), eval func(test *
 			}
 
 			defer db.Close()
-			prepare(db)
+			prepare(test, db)
 		}()
 
 		func() {
@@ -129,8 +131,6 @@ func testData(t *testing.T, prepare func(db *db.EntriesWriter), eval func(test *
 				panic(err)
 			}
 			defer db.Close()
-
-			test := require.New(t)
 			eval(test, db)
 		}()
 	})

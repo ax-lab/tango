@@ -231,7 +231,7 @@ func TestDecoderParsesFullEntryData(t *testing.T) {
 
 	checkAny("parses kanji info", func(entry *jmdict.Entry) bool {
 		for _, it := range entry.Kanji {
-			if it.Info != "" {
+			if len(it.Info) > 0 && it.Info[0] != "" {
 				return true
 			}
 		}
@@ -240,7 +240,7 @@ func TestDecoderParsesFullEntryData(t *testing.T) {
 
 	checkAny("parses kanji priority", func(entry *jmdict.Entry) bool {
 		for _, it := range entry.Kanji {
-			if it.Priority != "" {
+			if len(it.Priority) > 0 && it.Priority[0] != "" {
 				return true
 			}
 		}

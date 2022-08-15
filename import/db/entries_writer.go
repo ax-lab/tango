@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/ax-lab/tango/import/jmdict"
 	_ "github.com/mattn/go-sqlite3"
@@ -59,9 +60,13 @@ func (writer *EntriesWriter) WriteEntries(entries []*jmdict.Entry) error {
 	for _, entry := range entries {
 		insertEntry.Exec(entry.Sequence)
 		for pos, kanji := range entry.Kanji {
-			insertEntryKanji.Exec(entry.Sequence, pos, kanji.Text, kanji.Info, kanji.Priority)
+			insertEntryKanji.Exec(entry.Sequence, pos, kanji.Text, csv(kanji.Info), csv(kanji.Priority))
 		}
 	}
 
 	return tx.Finish()
+}
+
+func csv(values []string) string {
+	return strings.Join(values, "\t")
 }
