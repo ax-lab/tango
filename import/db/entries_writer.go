@@ -12,12 +12,7 @@ type EntriesWriter struct {
 }
 
 func NewEntriesWriter(outputFile string) (*EntriesWriter, error) {
-	db, err := sql.Open("sqlite3", outputFile)
-	if err != nil {
-		return nil, err
-	}
-
-	_, execErr := db.Exec(`
+	db, err := Open(outputFile, `
 		DROP TABLE IF EXISTS entries_kanji;
 		DROP TABLE IF EXISTS entries;
 
@@ -35,9 +30,8 @@ func NewEntriesWriter(outputFile string) (*EntriesWriter, error) {
 			FOREIGN KEY (sequence) REFERENCES entries(sequence)
 		);
 	`)
-	if execErr != nil {
-		db.Close()
-		return nil, execErr
+	if err != nil {
+		return nil, err
 	}
 
 	return &EntriesWriter{
@@ -50,40 +44,24 @@ func (writer *EntriesWriter) Close() {
 }
 
 func (writer *EntriesWriter) WriteEntries(entries []*jmdict.Entry) error {
-	tx, err := writer.db.Begin()
-	if err != nil {
-		return err
-	}
+	tx := BeginTransaction(writer.db)
 
-	insertEntry, err := tx.Prepare(`
+	insertEntry := tx.Prepare(`
 		INSERT INTO entries(sequence) VALUES (?)
 	`)
-	if err != nil {
-		return err
-	}
 
-	insertEntryKanji, err := tx.Prepare(`
+	insertEntryKanji := tx.Prepare(`
 		INSERT INTO entries_kanji
 		(sequence, position, text, info, priority)
 		VALUES (?, ?, ?, ?, ?)
 	`)
-	if err != nil {
-		return err
-	}
 
 	for _, entry := range entries {
-		if _, cmdErr := insertEntry.Exec(entry.Sequence); cmdErr != nil {
-			tx.Rollback()
-			return cmdErr
-		}
-
+		insertEntry.Exec(entry.Sequence)
 		for pos, kanji := range entry.Kanji {
-			if _, cmdErr := insertEntryKanji.Exec(entry.Sequence, pos, kanji.Text, kanji.Info, kanji.Priority); cmdErr != nil {
-				tx.Rollback()
-				return cmdErr
-			}
+			insertEntryKanji.Exec(entry.Sequence, pos, kanji.Text, kanji.Info, kanji.Priority)
 		}
 	}
 
-	return tx.Commit()
+	return tx.Finish()
 }
