@@ -15,6 +15,10 @@ type EntriesWriter struct {
 func NewEntriesWriter(outputFile string) (*EntriesWriter, error) {
 	db, err := Open(outputFile, `
 		DROP TABLE IF EXISTS entries_kanji;
+		DROP TABLE IF EXISTS entries_reading;
+		DROP TABLE IF EXISTS entries_sense_source;
+		DROP TABLE IF EXISTS entries_sense_glossary;
+		DROP TABLE IF EXISTS entries_sense;
 		DROP TABLE IF EXISTS entries;
 
 		CREATE TABLE entries (
@@ -41,6 +45,47 @@ func NewEntriesWriter(outputFile string) (*EntriesWriter, error) {
 			no_kanji    INTEGER,
 			PRIMARY KEY (sequence, position),
 			FOREIGN KEY (sequence) REFERENCES entries(sequence)
+		);
+
+		CREATE TABLE entries_sense (
+			sequence    INTEGER,
+			position    INTEGER,
+			info        TEXT,
+			pos         TEXT,
+			stagk       TEXT,
+			stagr       TEXT,
+			field       TEXT,
+			misc        TEXT,
+			dialect     TEXT,
+			antonym     TEXT,
+			xref        TEXT,
+			PRIMARY KEY (sequence, position),
+			FOREIGN KEY (sequence) REFERENCES entries(sequence)
+		);
+
+		CREATE TABLE entries_sense_glossary (
+			sequence    INTEGER,
+			sense       INTEGER,
+			position    INTEGER,
+			text        TEXT,
+			lang        TEXT,
+			type        TEXT,
+			PRIMARY KEY (sequence, sense, position),
+			FOREIGN KEY (sequence) REFERENCES entries(sequence),
+			FOREIGN KEY (sequence, sense) REFERENCES entries_sense(sequence, position)
+		);
+
+		CREATE TABLE entries_sense_source (
+			sequence    INTEGER,
+			sense       INTEGER,
+			position    INTEGER,
+			text        TEXT,
+			lang        TEXT,
+			type        TEXT,
+			wasei       TEXT,
+			PRIMARY KEY (sequence, sense, position),
+			FOREIGN KEY (sequence) REFERENCES entries(sequence),
+			FOREIGN KEY (sequence, sense) REFERENCES entries_sense(sequence, position)
 		);
 	`)
 	if err != nil {
@@ -75,6 +120,24 @@ func (writer *EntriesWriter) WriteEntries(entries []*jmdict.Entry) error {
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`)
 
+	insertEntrySense := tx.Prepare(`
+		INSERT INTO entries_sense
+		(sequence, position, info, pos, stagk, stagr, field, misc, dialect, antonym, xref)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`)
+
+	insertEntrySenseGlossary := tx.Prepare(`
+		INSERT INTO entries_sense_glossary
+		(sequence, sense, position, text, lang, type)
+		VALUES (?, ?, ?, ?, ?, ?)
+	`)
+
+	insertEntrySenseSource := tx.Prepare(`
+		INSERT INTO entries_sense_source
+		(sequence, sense, position, text, lang, type, wasei)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+	`)
+
 	for _, entry := range entries {
 		insertEntry.Exec(entry.Sequence)
 		for pos, kanji := range entry.Kanji {
@@ -84,6 +147,25 @@ func (writer *EntriesWriter) WriteEntries(entries []*jmdict.Entry) error {
 			insertEntryReading.Exec(
 				entry.Sequence, pos, reading.Text,
 				csv(reading.Info), csv(reading.Priority), csv(reading.Restriction), reading.NoKanji)
+		}
+		for pos, sense := range entry.Sense {
+			insertEntrySense.Exec(
+				entry.Sequence, pos,
+				csv(sense.Info), csv(sense.PartOfSpeech), csv(sense.StagKanji),
+				csv(sense.StagReading), csv(sense.Field), csv(sense.Misc),
+				csv(sense.Dialect), csv(sense.Antonym), csv(sense.XRef))
+
+			for pos_glossary, glossary := range sense.Glossary {
+				insertEntrySenseGlossary.Exec(
+					entry.Sequence, pos, pos_glossary,
+					glossary.Text, glossary.Lang, glossary.Type)
+			}
+
+			for pos_source, source := range sense.Source {
+				insertEntrySenseSource.Exec(
+					entry.Sequence, pos, pos_source,
+					source.Text, source.Lang, source.Type, source.Wasei)
+			}
 		}
 	}
 
