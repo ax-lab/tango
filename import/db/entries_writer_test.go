@@ -113,6 +113,77 @@ func TestEntriesWriterExportsKanji(t *testing.T) {
 	)
 }
 
+func TestEntriesWriterExportsReading(t *testing.T) {
+	testData(t,
+		func(test *require.Assertions, db *db.EntriesWriter) {
+			err := db.WriteEntries([]*jmdict.Entry{
+				{
+					Sequence: 1011,
+					Reading: []jmdict.EntryReading{
+						{Text: "reading 1"},
+					},
+				},
+				{
+					Sequence: 1012,
+					Reading: []jmdict.EntryReading{
+						{
+							Text:        "reading 2a",
+							Info:        []string{"info 2a"},
+							Priority:    []string{"priority 2a"},
+							Restriction: []string{"restriction 2a"},
+						},
+						{
+							NoKanji:     true,
+							Text:        "reading 2b",
+							Info:        []string{"info 2b", "x"},
+							Priority:    []string{"priority 2b", "y"},
+							Restriction: []string{"restriction 2b", "z"},
+						},
+					},
+				},
+				{
+					Sequence: 1013,
+				},
+			})
+			test.NoError(err)
+		},
+		func(test *require.Assertions, db *sql.DB) {
+			expected := []Data{
+				{
+					"sequence":    int64(1011),
+					"position":    int64(0),
+					"text":        "reading 1",
+					"info":        "",
+					"priority":    "",
+					"restriction": "",
+					"no_kanji":    int64(0),
+				},
+				{
+					"sequence":    int64(1012),
+					"position":    int64(0),
+					"text":        "reading 2a",
+					"info":        "info 2a",
+					"priority":    "priority 2a",
+					"restriction": "restriction 2a",
+					"no_kanji":    int64(0),
+				},
+				{
+					"sequence":    int64(1012),
+					"position":    int64(1),
+					"text":        "reading 2b",
+					"info":        "info 2b\tx",
+					"priority":    "priority 2b\ty",
+					"restriction": "restriction 2b\tz",
+					"no_kanji":    int64(1),
+				},
+			}
+			actual := testQuery(test, db,
+				"SELECT sequence, position, text, info, priority, restriction, no_kanji FROM entries_reading")
+			test.EqualValues(expected, actual)
+		},
+	)
+}
+
 func testData(t *testing.T, prepare func(test *require.Assertions, db *db.EntriesWriter), eval func(test *require.Assertions, db *sql.DB)) {
 	testTempDB(t, func(test *require.Assertions, dbFile string) {
 		func() {

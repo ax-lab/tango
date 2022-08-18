@@ -72,6 +72,11 @@ func (decoder *Decoder) ReadEntry() (*Entry, error) {
 			if entry.Sequence == 0 {
 				return nil, fmt.Errorf("invalid entry: missing sequence")
 			}
+
+			for i, it := range entry.Reading {
+				entry.Reading[i].NoKanji = it.NoKanjiRaw != nil
+				entry.Reading[i].NoKanjiRaw = nil
+			}
 			return &entry, nil
 		}
 	}

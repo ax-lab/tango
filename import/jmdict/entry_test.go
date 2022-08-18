@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEntryReadsKanji(t *testing.T) {
+func TestEntryParsesKanji(t *testing.T) {
 	test := require.New(t)
 	entry := parseEntry(test, `
 		<entry>
@@ -39,6 +39,56 @@ func TestEntryReadsKanji(t *testing.T) {
 				Text:     "kanji 2",
 				Info:     []string{"info2a", "info2b"},
 				Priority: []string{"news2a", "news2b"},
+			},
+		},
+	}
+	test.Equal(expected, entry)
+}
+
+func TestEntryParsesReading(t *testing.T) {
+	test := require.New(t)
+	entry := parseEntry(test, `
+		<entry>
+			<ent_seq>123</ent_seq>
+			<r_ele>
+				<reb>reading 1</reb>
+			</r_ele>
+			<r_ele>
+				<reb>reading 2</reb>
+				<re_restr>kanji 2</re_restr>
+				<re_inf>info2</re_inf>
+				<re_pri>news2</re_pri>
+			</r_ele>
+			<r_ele>
+				<reb>reading 3</reb>
+				<re_nokanji/>
+				<re_restr>kanji 3a</re_restr>
+				<re_restr>kanji 3b</re_restr>
+				<re_inf>info3a</re_inf>
+				<re_inf>info3b</re_inf>
+				<re_pri>news3a</re_pri>
+				<re_pri>news3b</re_pri>
+			</r_ele>
+		</entry>`)
+
+	expected := &jmdict.Entry{
+		Sequence: 123,
+		Reading: []jmdict.EntryReading{
+			{
+				Text: "reading 1",
+			},
+			{
+				Text:        "reading 2",
+				Info:        []string{"info2"},
+				Priority:    []string{"news2"},
+				Restriction: []string{"kanji 2"},
+			},
+			{
+				Text:        "reading 3",
+				NoKanji:     true,
+				Info:        []string{"info3a", "info3b"},
+				Priority:    []string{"news3a", "news3b"},
+				Restriction: []string{"kanji 3a", "kanji 3b"},
 			},
 		},
 	}

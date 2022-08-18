@@ -246,6 +246,46 @@ func TestDecoderParsesFullEntryData(t *testing.T) {
 		}
 		return false
 	})
+
+	checkAny("parses reading", func(entry *jmdict.Entry) bool {
+		return len(entry.Reading) > 0 && entry.Reading[0].Text != ""
+	})
+
+	checkAny("parses reading info", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Reading {
+			if len(it.Info) > 0 && it.Info[0] != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses reading priority", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Reading {
+			if len(it.Priority) > 0 && it.Priority[0] != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses reading restriction", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Reading {
+			if len(it.Restriction) > 0 && it.Restriction[0] != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses reading no-kanji", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Reading {
+			if it.NoKanji {
+				return true
+			}
+		}
+		return false
+	})
 }
 
 func openXML(input string) *jmdict.Decoder {
