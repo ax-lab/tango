@@ -7,15 +7,19 @@
 		"jlpt",
 		"jmdict",
 		"listenfd",
+		"lsource",
 		"mattn",
 		"nokanji",
 		"PCDATA",
 		"restr",
 		"RocknRoll",
 		"serde",
+		"stagk",
+		"stagr",
 		"stretchr",
 		"systemfd",
-		"unsync"
+		"unsync",
+		"wasei"
 	],
 	"flagWords": [
 		"teh"

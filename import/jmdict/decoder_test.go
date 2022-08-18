@@ -194,7 +194,7 @@ func TestDecoderParsesLoadedFile(t *testing.T) {
 }
 
 func TestDecoderParsesFullEntryData(t *testing.T) {
-	const entriesToLoad = 1000
+	const entriesToLoad = 5000
 
 	test := require.New(t)
 
@@ -282,6 +282,156 @@ func TestDecoderParsesFullEntryData(t *testing.T) {
 		for _, it := range entry.Reading {
 			if it.NoKanji {
 				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense", func(entry *jmdict.Entry) bool {
+		return len(entry.Sense) > 0 && len(entry.Sense[0].Glossary) > 0 &&
+			entry.Sense[0].Glossary[0].Text != ""
+	})
+
+	checkAny("parses sense info", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Sense {
+			if len(it.Info) > 0 && it.Info[0] != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense pos", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Sense {
+			if len(it.PartOfSpeech) > 0 && it.PartOfSpeech[0] != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense stag kanji", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Sense {
+			if len(it.StagKanji) > 0 && it.StagKanji[0] != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense stag reading", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Sense {
+			if len(it.StagReading) > 0 && it.StagReading[0] != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense field", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Sense {
+			if len(it.Field) > 0 && it.Field[0] != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense misc", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Sense {
+			if len(it.Misc) > 0 && it.Misc[0] != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense dialect", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Sense {
+			if len(it.Dialect) > 0 && it.Dialect[0] != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense antonym", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Sense {
+			if len(it.Antonym) > 0 && it.Antonym[0] != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense xref", func(entry *jmdict.Entry) bool {
+		for _, it := range entry.Sense {
+			if len(it.XRef) > 0 && it.XRef[0] != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense glossary lang", func(entry *jmdict.Entry) bool {
+		for _, sense := range entry.Sense {
+			for _, it := range sense.Glossary {
+				if it.Lang != "" {
+					return true
+				}
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense glossary type", func(entry *jmdict.Entry) bool {
+		for _, sense := range entry.Sense {
+			for _, it := range sense.Glossary {
+				if it.Type != "" {
+					return true
+				}
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense source", func(entry *jmdict.Entry) bool {
+		for _, sense := range entry.Sense {
+			if len(sense.Source) > 0 && sense.Source[0].Text != "" {
+				return true
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense source lang", func(entry *jmdict.Entry) bool {
+		for _, sense := range entry.Sense {
+			for _, it := range sense.Source {
+				if it.Lang != "" {
+					return true
+				}
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense source type", func(entry *jmdict.Entry) bool {
+		for _, sense := range entry.Sense {
+			for _, it := range sense.Source {
+				if it.Type == "part" {
+					return true
+				}
+			}
+		}
+		return false
+	})
+
+	checkAny("parses sense source wasei", func(entry *jmdict.Entry) bool {
+		for _, sense := range entry.Sense {
+			for _, it := range sense.Source {
+				if it.Wasei == "y" {
+					return true
+				}
 			}
 		}
 		return false

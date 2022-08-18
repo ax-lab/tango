@@ -95,6 +95,120 @@ func TestEntryParsesReading(t *testing.T) {
 	test.Equal(expected, entry)
 }
 
+func TestEntryParsesSense(t *testing.T) {
+	test := require.New(t)
+	entry := parseEntry(test, `
+		<entry>
+			<ent_seq>123</ent_seq>
+			<sense>
+				<gloss>sense A</gloss>
+			</sense>
+			<sense>
+				<gloss>sense B1</gloss>
+				<gloss>sense B2</gloss>
+				<stagk>stagk B1</stagk>
+				<stagk>stagk B2</stagk>
+				<stagr>stagr B1</stagr>
+				<stagr>stagr B2</stagr>
+				<pos>pos B1</pos>
+				<pos>pos B2</pos>
+				<xref>xref B1</xref>
+				<xref>xref B2</xref>
+				<ant>ant B1</ant>
+				<ant>ant B2</ant>
+				<field>field B1</field>
+				<field>field B2</field>
+				<misc>misc B1</misc>
+				<misc>misc B2</misc>
+				<s_inf>s_inf B1</s_inf>
+				<s_inf>s_inf B2</s_inf>
+				<dial>dial B1</dial>
+				<dial>dial B2</dial>
+			</sense>
+		</entry>`)
+
+	expected := &jmdict.Entry{
+		Sequence: 123,
+		Sense: []jmdict.EntrySense{
+			{
+				Glossary: []jmdict.EntrySenseGlossary{
+					{Text: "sense A"},
+				},
+			},
+			{
+				Glossary: []jmdict.EntrySenseGlossary{
+					{Text: "sense B1"},
+					{Text: "sense B2"},
+				},
+				StagKanji:    []string{"stagk B1", "stagk B2"},
+				StagReading:  []string{"stagr B1", "stagr B2"},
+				PartOfSpeech: []string{"pos B1", "pos B2"},
+				XRef:         []string{"xref B1", "xref B2"},
+				Antonym:      []string{"ant B1", "ant B2"},
+				Field:        []string{"field B1", "field B2"},
+				Misc:         []string{"misc B1", "misc B2"},
+				Info:         []string{"s_inf B1", "s_inf B2"},
+				Dialect:      []string{"dial B1", "dial B2"},
+			},
+		},
+	}
+	test.Equal(expected, entry)
+}
+
+func TestEntryParsesSenseGlossaryAttributes(t *testing.T) {
+	test := require.New(t)
+	entry := parseEntry(test, `
+		<entry>
+			<ent_seq>123</ent_seq>
+			<sense>
+				<gloss xml:lang="por">portuguese</gloss>
+				<gloss g_type="fig">figurative</gloss>
+			</sense>
+		</entry>`)
+
+	expected := &jmdict.Entry{
+		Sequence: 123,
+		Sense: []jmdict.EntrySense{
+			{
+				Glossary: []jmdict.EntrySenseGlossary{
+					{Text: "portuguese", Lang: "por"},
+					{Text: "figurative", Type: "fig"},
+				},
+			},
+		},
+	}
+	test.Equal(expected, entry)
+}
+
+func TestEntryParsesSenseSource(t *testing.T) {
+	test := require.New(t)
+	entry := parseEntry(test, `
+		<entry>
+			<ent_seq>123</ent_seq>
+			<sense>
+				<lsource>source A</lsource>
+				<lsource xml:lang="ger">source B</lsource>
+				<lsource ls_type="part">source C</lsource>
+				<lsource ls_wasei="y">source D</lsource>
+			</sense>
+		</entry>`)
+
+	expected := &jmdict.Entry{
+		Sequence: 123,
+		Sense: []jmdict.EntrySense{
+			{
+				Source: []jmdict.EntrySenseSource{
+					{Text: "source A"},
+					{Text: "source B", Lang: "ger"},
+					{Text: "source C", Type: "part"},
+					{Text: "source D", Wasei: "y"},
+				},
+			},
+		},
+	}
+	test.Equal(expected, entry)
+}
+
 func parseEntry(test *require.Assertions, entryXML string) *jmdict.Entry {
 	entries := parseEntries(test, entryXML)
 	return entries[0]
