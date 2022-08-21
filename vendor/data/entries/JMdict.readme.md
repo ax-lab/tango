@@ -5,7 +5,110 @@ Home: http://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project
 Page: http://ftp.edrdg.org/pub/Nihongo/00INDEX.html
 Link: http://ftp.edrdg.org/pub/Nihongo/JMdict.gz
 
-# Sample
+# Entry Sample
+
+```xml
+<entry>
+<ent_seq>1594720</ent_seq>
+<k_ele>
+<keb>収集</keb>
+<ke_pri>ichi1</ke_pri>
+<ke_pri>news1</ke_pri>
+<ke_pri>nf05</ke_pri>
+</k_ele>
+<k_ele>
+<keb>蒐集</keb>
+</k_ele>
+<k_ele>
+<keb>拾集</keb>
+</k_ele>
+<k_ele>
+<keb>収輯</keb>
+</k_ele>
+<r_ele>
+<reb>しゅうしゅう</reb>
+<re_pri>ichi1</re_pri>
+<re_pri>news1</re_pri>
+<re_pri>nf05</re_pri>
+</r_ele>
+<sense>
+<pos>&n;</pos>
+<pos>&vs;</pos>
+<gloss>gathering up</gloss>
+<gloss>collection</gloss>
+<gloss>accumulation</gloss>
+</sense>
+<sense>
+<gloss xml:lang="dut">verzamelen</gloss>
+<gloss xml:lang="dut">bijeenbrengen</gloss>
+<gloss xml:lang="dut">samenbrengen</gloss>
+<gloss xml:lang="dut">vergaren</gloss>
+<gloss xml:lang="dut">{veroud.} vergaderen</gloss>
+<gloss xml:lang="dut">inzamelen</gloss>
+<gloss xml:lang="dut">{ごみを} ophalen</gloss>
+<gloss xml:lang="dut">schooien</gloss>
+</sense>
+<sense>
+<gloss xml:lang="dut">collectioneren</gloss>
+<gloss xml:lang="dut">verzamelen</gloss>
+<gloss xml:lang="dut">sparen</gloss>
+</sense>
+<sense>
+<gloss xml:lang="dut">verzameling</gloss>
+<gloss xml:lang="dut">bijeenbrenging</gloss>
+<gloss xml:lang="dut">samenbrenging</gloss>
+<gloss xml:lang="dut">vergaring</gloss>
+<gloss xml:lang="dut">{veroud.} vergadering</gloss>
+<gloss xml:lang="dut">inzameling</gloss>
+<gloss xml:lang="dut">{ごみの} ophaling</gloss>
+</sense>
+<sense>
+<gloss xml:lang="dut">verzameling</gloss>
+<gloss xml:lang="dut">collectie</gloss>
+<gloss xml:lang="dut">bestand</gloss>
+</sense>
+<sense>
+<gloss xml:lang="fre">collection</gloss>
+<gloss xml:lang="fre">récolte</gloss>
+</sense>
+<sense>
+<gloss xml:lang="ger">sammeln</gloss>
+<gloss xml:lang="ger">(f) Sammlung</gloss>
+<gloss xml:lang="ger">(f) Kollektion</gloss>
+<gloss xml:lang="ger">(n) Sammeln</gloss>
+</sense>
+<sense>
+<gloss xml:lang="hun">gyűjtemény</gloss>
+<gloss xml:lang="hun">gyűjtés</gloss>
+</sense>
+<sense>
+<gloss xml:lang="rus">сбор</gloss>
+<gloss xml:lang="rus">собирать, коллекционировать</gloss>
+<gloss xml:lang="rus">собирание, коллекционирование</gloss>
+<gloss xml:lang="rus">{～する} собирать, коллекционировать</gloss>
+</sense>
+<sense>
+<gloss xml:lang="slv">zbiranje</gloss>
+<gloss xml:lang="slv">zbirati</gloss>
+</sense>
+<sense>
+<gloss xml:lang="spa">coleccionar</gloss>
+<gloss xml:lang="spa">recopilar</gloss>
+<gloss xml:lang="spa">hacer colección de</gloss>
+<gloss xml:lang="spa">recoger</gloss>
+<gloss xml:lang="spa">colección</gloss>
+<gloss xml:lang="spa">amontonamiento</gloss>
+<gloss xml:lang="spa">hacinamiento</gloss>
+<gloss xml:lang="spa">acumulamiento</gloss>
+<gloss xml:lang="spa">colección</gloss>
+<gloss xml:lang="spa">recopilación</gloss>
+<gloss xml:lang="spa">recolecta</gloss>
+<gloss xml:lang="spa">recogida</gloss>
+</sense>
+</entry>
+```
+
+# Full Sample
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>

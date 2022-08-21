@@ -1,5 +1,5 @@
 # Imported dictionary data
-data/
+/data/
 
 # Local development configuration file (see `app.config.js`).
 app.config.local.js
