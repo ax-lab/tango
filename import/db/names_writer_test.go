@@ -58,7 +58,7 @@ func TestNamesWriterExportsNames(t *testing.T) {
 				{"sequence": int64(1002)},
 				{"sequence": int64(1003)},
 			}
-			actual := testQuery(test, db, "SELECT sequence FROM names")
+			actual := testQuery(test, db, "SELECT sequence FROM name")
 			test.EqualValues(expected, actual)
 		},
 	)
@@ -97,7 +97,7 @@ func TestNamesWriterExportsKanji(t *testing.T) {
 					"kanji":    "",
 				},
 			}
-			actual := testQuery(test, db, "SELECT sequence, kanji FROM names")
+			actual := testQuery(test, db, "SELECT sequence, kanji FROM name")
 			test.EqualValues(expected, actual)
 		},
 	)
@@ -137,7 +137,7 @@ func TestNamesWriterExportsReading(t *testing.T) {
 				},
 			}
 			actual := testQuery(test, db,
-				"SELECT sequence, reading FROM names")
+				"SELECT sequence, reading FROM name")
 			test.EqualValues(expected, actual)
 		},
 	)
@@ -201,7 +201,7 @@ func TestNamesWriterExportsSense(t *testing.T) {
 			actual := testQuery(test, db, `
 				SELECT
 					sequence, position, info, xref, translation
-				FROM names_sense`)
+				FROM name_sense`)
 			test.EqualValues(expected, actual)
 		},
 	)

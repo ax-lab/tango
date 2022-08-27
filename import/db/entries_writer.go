@@ -14,28 +14,28 @@ type EntriesWriter struct {
 
 func NewEntriesWriter(outputFile string) (*EntriesWriter, error) {
 	db, err := Open(outputFile, `
-		DROP TABLE IF EXISTS entries_kanji;
-		DROP TABLE IF EXISTS entries_reading;
-		DROP TABLE IF EXISTS entries_sense_source;
-		DROP TABLE IF EXISTS entries_sense_glossary;
-		DROP TABLE IF EXISTS entries_sense;
-		DROP TABLE IF EXISTS entries;
+		DROP TABLE IF EXISTS entry_kanji;
+		DROP TABLE IF EXISTS entry_reading;
+		DROP TABLE IF EXISTS entry_sense_source;
+		DROP TABLE IF EXISTS entry_sense_glossary;
+		DROP TABLE IF EXISTS entry_sense;
+		DROP TABLE IF EXISTS entry;
 
-		CREATE TABLE entries (
+		CREATE TABLE entry (
 			sequence INTEGER NOT NULL PRIMARY KEY
 		);
 
-		CREATE TABLE entries_kanji (
+		CREATE TABLE entry_kanji (
 			sequence INTEGER,
 			position INTEGER,
 			text     TEXT,
 			info     TEXT,
 			priority TEXT,
 			PRIMARY KEY (sequence, position),
-			FOREIGN KEY (sequence) REFERENCES entries(sequence)
+			FOREIGN KEY (sequence) REFERENCES entry(sequence)
 		);
 
-		CREATE TABLE entries_reading (
+		CREATE TABLE entry_reading (
 			sequence    INTEGER,
 			position    INTEGER,
 			text        TEXT,
@@ -44,10 +44,10 @@ func NewEntriesWriter(outputFile string) (*EntriesWriter, error) {
 			restriction TEXT,
 			no_kanji    INTEGER,
 			PRIMARY KEY (sequence, position),
-			FOREIGN KEY (sequence) REFERENCES entries(sequence)
+			FOREIGN KEY (sequence) REFERENCES entry(sequence)
 		);
 
-		CREATE TABLE entries_sense (
+		CREATE TABLE entry_sense (
 			sequence    INTEGER,
 			position    INTEGER,
 			info        TEXT,
@@ -60,10 +60,10 @@ func NewEntriesWriter(outputFile string) (*EntriesWriter, error) {
 			antonym     TEXT,
 			xref        TEXT,
 			PRIMARY KEY (sequence, position),
-			FOREIGN KEY (sequence) REFERENCES entries(sequence)
+			FOREIGN KEY (sequence) REFERENCES entry(sequence)
 		);
 
-		CREATE TABLE entries_sense_glossary (
+		CREATE TABLE entry_sense_glossary (
 			sequence    INTEGER,
 			sense       INTEGER,
 			position    INTEGER,
@@ -71,11 +71,11 @@ func NewEntriesWriter(outputFile string) (*EntriesWriter, error) {
 			lang        TEXT,
 			type        TEXT,
 			PRIMARY KEY (sequence, sense, position),
-			FOREIGN KEY (sequence) REFERENCES entries(sequence),
-			FOREIGN KEY (sequence, sense) REFERENCES entries_sense(sequence, position)
+			FOREIGN KEY (sequence) REFERENCES entry(sequence),
+			FOREIGN KEY (sequence, sense) REFERENCES entry_sense(sequence, position)
 		);
 
-		CREATE TABLE entries_sense_source (
+		CREATE TABLE entry_sense_source (
 			sequence    INTEGER,
 			sense       INTEGER,
 			position    INTEGER,
@@ -84,8 +84,8 @@ func NewEntriesWriter(outputFile string) (*EntriesWriter, error) {
 			type        TEXT,
 			wasei       TEXT,
 			PRIMARY KEY (sequence, sense, position),
-			FOREIGN KEY (sequence) REFERENCES entries(sequence),
-			FOREIGN KEY (sequence, sense) REFERENCES entries_sense(sequence, position)
+			FOREIGN KEY (sequence) REFERENCES entry(sequence),
+			FOREIGN KEY (sequence, sense) REFERENCES entry_sense(sequence, position)
 		);
 	`)
 	if err != nil {
@@ -105,35 +105,35 @@ func (writer *EntriesWriter) WriteEntries(entries []*jmdict.Entry) error {
 	tx := BeginTransaction(writer.db)
 
 	insertEntry := tx.Prepare(`
-		INSERT INTO entries(sequence) VALUES (?)
+		INSERT INTO entry(sequence) VALUES (?)
 	`)
 
 	insertEntryKanji := tx.Prepare(`
-		INSERT INTO entries_kanji
+		INSERT INTO entry_kanji
 		(sequence, position, text, info, priority)
 		VALUES (?, ?, ?, ?, ?)
 	`)
 
 	insertEntryReading := tx.Prepare(`
-		INSERT INTO entries_reading
+		INSERT INTO entry_reading
 		(sequence, position, text, info, priority, restriction, no_kanji)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`)
 
 	insertEntrySense := tx.Prepare(`
-		INSERT INTO entries_sense
+		INSERT INTO entry_sense
 		(sequence, position, info, pos, stagk, stagr, field, misc, dialect, antonym, xref)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`)
 
 	insertEntrySenseGlossary := tx.Prepare(`
-		INSERT INTO entries_sense_glossary
+		INSERT INTO entry_sense_glossary
 		(sequence, sense, position, text, lang, type)
 		VALUES (?, ?, ?, ?, ?, ?)
 	`)
 
 	insertEntrySenseSource := tx.Prepare(`
-		INSERT INTO entries_sense_source
+		INSERT INTO entry_sense_source
 		(sequence, sense, position, text, lang, type, wasei)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`)

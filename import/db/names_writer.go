@@ -12,23 +12,23 @@ type NamesWriter struct {
 
 func NewNamesWriter(outputFile string) (*NamesWriter, error) {
 	db, err := Open(outputFile, `
-		DROP TABLE IF EXISTS names_sense;
-		DROP TABLE IF EXISTS names;
+		DROP TABLE IF EXISTS name_sense;
+		DROP TABLE IF EXISTS name;
 
-		CREATE TABLE names (
+		CREATE TABLE name (
 			sequence INTEGER NOT NULL PRIMARY KEY,
 			kanji    TEXT,
 			reading  TEXT
 		);
 
-		CREATE TABLE names_sense (
+		CREATE TABLE name_sense (
 			sequence    INTEGER,
 			position    INTEGER,
 			info        TEXT,
 			xref        TEXT,
 			translation TEXT,
 			PRIMARY KEY (sequence, position),
-			FOREIGN KEY (sequence) REFERENCES names(sequence)
+			FOREIGN KEY (sequence) REFERENCES name(sequence)
 		);
 	`)
 	if err != nil {
@@ -48,11 +48,11 @@ func (writer *NamesWriter) WriteNames(names []*jmnedict.Name) error {
 	tx := BeginTransaction(writer.db)
 
 	insertName := tx.Prepare(`
-		INSERT INTO names(sequence, kanji, reading) VALUES (?, ?, ?)
+		INSERT INTO name(sequence, kanji, reading) VALUES (?, ?, ?)
 	`)
 
 	insertNameSense := tx.Prepare(`
-		INSERT INTO names_sense
+		INSERT INTO name_sense
 		(sequence, position, info, xref, translation)
 		VALUES (?, ?, ?, ?, ?)
 	`)

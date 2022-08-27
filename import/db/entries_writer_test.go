@@ -58,7 +58,7 @@ func TestEntriesWriterExportsEntries(t *testing.T) {
 				{"sequence": int64(1002)},
 				{"sequence": int64(1003)},
 			}
-			actual := testQuery(test, db, "SELECT sequence FROM entries")
+			actual := testQuery(test, db, "SELECT sequence FROM entry")
 			test.EqualValues(expected, actual)
 		},
 	)
@@ -119,7 +119,7 @@ func TestEntriesWriterExportsKanji(t *testing.T) {
 					"priority": "priority 2b\ty",
 				},
 			}
-			actual := testQuery(test, db, "SELECT sequence, position, text, info, priority FROM entries_kanji")
+			actual := testQuery(test, db, "SELECT sequence, position, text, info, priority FROM entry_kanji")
 			test.EqualValues(expected, actual)
 		},
 	)
@@ -190,7 +190,7 @@ func TestEntriesWriterExportsReading(t *testing.T) {
 				},
 			}
 			actual := testQuery(test, db,
-				"SELECT sequence, position, text, info, priority, restriction, no_kanji FROM entries_reading")
+				"SELECT sequence, position, text, info, priority, restriction, no_kanji FROM entry_reading")
 			test.EqualValues(expected, actual)
 		},
 	)
@@ -285,7 +285,7 @@ func TestEntriesWriterExportsSense(t *testing.T) {
 				SELECT
 					sequence, position, info, pos, stagk, stagr, field, misc,
 					dialect, antonym, xref
-				FROM entries_sense`)
+				FROM entry_sense`)
 			test.EqualValues(expected, actual)
 		},
 	)
@@ -386,7 +386,7 @@ func TestEntriesWriterExportsSenseGlossary(t *testing.T) {
 			actual := testQuery(test, db, `
 				SELECT
 					sequence, sense, position, text, lang, type
-				FROM entries_sense_glossary`)
+				FROM entry_sense_glossary`)
 			test.EqualValues(expected, actual)
 		},
 	)
@@ -493,7 +493,7 @@ func TestEntriesWriterExportsSenseSource(t *testing.T) {
 			actual := testQuery(test, db, `
 				SELECT
 					sequence, sense, position, text, lang, type, wasei
-				FROM entries_sense_source`)
+				FROM entry_sense_source`)
 			test.EqualValues(expected, actual)
 		},
 	)
