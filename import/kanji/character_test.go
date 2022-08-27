@@ -168,7 +168,7 @@ func TestCharacterParsesReadingMeaning(t *testing.T) {
 
 	expected := &kanji.Character{
 		Literal: "X",
-		ReadingMeanings: []kanji.CharacterReadingMeaningGroup{
+		ReadingMeanings: []kanji.CharacterReadingMeaning{
 			{
 				Reading: []kanji.CharacterReading{
 					{Type: "ja_on", Text: "カ"},

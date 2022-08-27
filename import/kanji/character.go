@@ -7,7 +7,7 @@ type Character struct {
 	Frequency int    `xml:"misc>freq"`
 	JLPT      int    `xml:"misc>jlpt"`
 
-	ReadingMeanings []CharacterReadingMeaningGroup `xml:"reading_meaning>rmgroup"`
+	ReadingMeanings []CharacterReadingMeaning `xml:"reading_meaning>rmgroup"`
 
 	RadicalName []string `xml:"misc>rad_name"`
 
@@ -48,7 +48,7 @@ type CharacterQueryCode struct {
 	SkipMisclass string `xml:"skip_misclass,attr"`
 }
 
-type CharacterReadingMeaningGroup struct {
+type CharacterReadingMeaning struct {
 	Reading []CharacterReading `xml:"reading"`
 	Meaning []CharacterMeaning `xml:"meaning"`
 }

@@ -37,6 +37,13 @@ func (trans *WriterTransaction) Finish() error {
 	return trans.err
 }
 
+func (trans *WriterTransaction) Exec(sql string, args ...any) bool {
+	if trans.err == nil {
+		_, trans.err = trans.tx.Exec(sql, args...)
+	}
+	return trans.err == nil
+}
+
 func (trans *WriterTransaction) Prepare(sql string) *WriterCommand {
 	out := &WriterCommand{trans: trans}
 	if trans.err == nil {

@@ -10,11 +10,13 @@ import (
 	"github.com/ax-lab/tango/import/db"
 	"github.com/ax-lab/tango/import/jmdict"
 	"github.com/ax-lab/tango/import/jmnedict"
+	"github.com/ax-lab/tango/import/kanji"
 )
 
 const (
 	EntriesDB = "entries.db"
 	NamesDB   = "names.db"
+	KanjiDB   = "kanji.db"
 )
 
 func main() {
@@ -34,6 +36,7 @@ func main() {
 
 	importIfNotExists(path.Join(outputDir, EntriesDB), importEntries)
 	importIfNotExists(path.Join(outputDir, NamesDB), importNames)
+	importIfNotExists(path.Join(outputDir, KanjiDB), importKanji)
 }
 
 func importIfNotExists(outputFile string, callback func(outputFile string)) {
@@ -110,6 +113,44 @@ func importNames(outputFile string) {
 		}
 	}
 	opWriteNames.Complete()
+}
+
+func importKanji(outputFile string) {
+	var (
+		characters []*kanji.Character
+		info       kanji.Info
+	)
+	opImportKanji := Start("importing kanji")
+	if input, err := kanji.Load(kanji.DefaultFilePath); err != nil {
+		ExitWithError("could not load Kanji data: %v", err)
+	} else {
+		decoder := kanji.NewDecoder(input)
+		for {
+			entry, err := decoder.ReadCharacter()
+			if err != nil {
+				ExitWithError("importing characters: %v", err)
+			} else if entry == nil {
+				break
+			}
+			characters = append(characters, entry)
+		}
+		info = decoder.Info
+	}
+
+	opImportKanji.Complete()
+	fmt.Printf("... Loaded %d kanji\n", len(characters))
+
+	opWriteKanji := Start("writing " + KanjiDB)
+	if db, dbErr := db.NewKanjiWriter(outputFile); dbErr != nil {
+		ExitWithError("creating %s: %v", KanjiDB, dbErr)
+	} else {
+		defer db.Close()
+		db.WriteInfo(info)
+		if writeErr := db.WriteCharacters(characters); writeErr != nil {
+			ExitWithError("writing kanji to %s: %v", KanjiDB, writeErr)
+		}
+	}
+	opWriteKanji.Complete()
 }
 
 type Timer struct {
