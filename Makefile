@@ -24,7 +24,7 @@ test-import:
 	@echo Import tests
 	@echo ===============================================
 	@echo
-	@go test ./import/...
+	@go test -count=1 ./import/...
 
 import:
 	@go run import/main.go -output=data
