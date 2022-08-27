@@ -1,4 +1,4 @@
-package jmdict
+package jmnedict
 
 import (
 	"bytes"
@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	xmlRootElement   = "JMdict"
+	xmlRootElement   = "JMnedict"
 	xmlEntryElement  = "entry"
-	xmlDoctypePrefix = "DOCTYPE JMdict ["
+	xmlDoctypePrefix = "DOCTYPE JMnedict ["
 )
 
 type Decoder struct {
@@ -28,7 +28,7 @@ func NewDecoder(input io.Reader) *Decoder {
 	return out
 }
 
-func (decoder *Decoder) ReadEntry() (*Entry, error) {
+func (decoder *Decoder) ReadEntry() (*Name, error) {
 	input := decoder.xml
 	if !decoder.init {
 		decoder.init = true
@@ -65,19 +65,14 @@ func (decoder *Decoder) ReadEntry() (*Entry, error) {
 			}
 			return nil, err
 		} else if start, ok := token.(xml.StartElement); ok && start.Name.Local == xmlEntryElement {
-			var entry Entry
-			if entryErr := input.DecodeElement(&entry, &start); entryErr != nil {
-				return nil, fmt.Errorf("decoding entry: %v", entryErr)
+			var name Name
+			if nameErr := input.DecodeElement(&name, &start); nameErr != nil {
+				return nil, fmt.Errorf("decoding entry: %v", nameErr)
 			}
-			if entry.Sequence == 0 {
+			if name.Sequence == 0 {
 				return nil, fmt.Errorf("invalid entry: missing sequence")
 			}
-
-			for i, it := range entry.Reading {
-				entry.Reading[i].NoKanji = it.NoKanjiRaw != nil
-				entry.Reading[i].NoKanjiRaw = nil
-			}
-			return &entry, nil
+			return &name, nil
 		}
 	}
 }

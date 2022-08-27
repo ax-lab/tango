@@ -6,6 +6,11 @@ Home: http://www.edrdg.org/enamdict/enamdict_doc.html
 
 # XML Sample
 
+Notes:
+- `ke_inf`, `ke_pri`, `re_inf`, `re_pri`, and `re_restr` are not used in
+  the current version
+- the `xml:lang` attribute is not used for `trans_det` elements
+
 ```xml
 <?xml version="1.0"?>
 <!DOCTYPE JMnedict [
