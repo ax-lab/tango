@@ -57,8 +57,8 @@ func TestNameParsesSense(t *testing.T) {
 				<trans_det>translation</trans_det>
 			</trans>
 			<trans>
-				<name_type>type 1</name_type>
-				<name_type>type 2</name_type>
+				<name_type>info 1</name_type>
+				<name_type>info 2</name_type>
 				<xref>xref 1</xref>
 				<xref>xref 2</xref>
 				<trans_det>translation 1</trans_det>
@@ -73,7 +73,7 @@ func TestNameParsesSense(t *testing.T) {
 				Translation: []string{"translation"},
 			},
 			{
-				Type:        []string{"type 1", "type 2"},
+				Info:        []string{"info 1", "info 2"},
 				XRef:        []string{"xref 1", "xref 2"},
 				Translation: []string{"translation 1", "translation 2"},
 			},

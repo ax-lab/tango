@@ -9,7 +9,7 @@ type Name struct {
 }
 
 type NameSense struct {
-	Type        []string `xml:"name_type"`
+	Info        []string `xml:"name_type"`
 	XRef        []string `xml:"xref"`
 	Translation []string `xml:"trans_det"`
 }

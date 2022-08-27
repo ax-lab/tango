@@ -236,7 +236,7 @@ func TestDecoderParsesFullEntryData(t *testing.T) {
 
 	checkAny("parses sense type", func(entry *jmnedict.Name) bool {
 		for _, it := range entry.Sense {
-			if len(it.Type) > 0 && it.Type[0] != "" {
+			if len(it.Info) > 0 && it.Info[0] != "" {
 				return true
 			}
 		}
@@ -245,7 +245,7 @@ func TestDecoderParsesFullEntryData(t *testing.T) {
 
 	checkAny("parses sense type as tag", func(entry *jmnedict.Name) bool {
 		for _, it := range entry.Sense {
-			if it.Type[0] != "fem" {
+			if it.Info[0] != "fem" {
 				return true
 			}
 		}

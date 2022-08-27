@@ -43,7 +43,7 @@ func TestEntriesWriterCanRewriteTheDatabase(t *testing.T) {
 }
 
 func TestEntriesWriterExportsEntries(t *testing.T) {
-	testData(t,
+	testEntries(t,
 		func(test *require.Assertions, db *db.EntriesWriter) {
 			err := db.WriteEntries([]*jmdict.Entry{
 				{Sequence: 1001},
@@ -65,7 +65,7 @@ func TestEntriesWriterExportsEntries(t *testing.T) {
 }
 
 func TestEntriesWriterExportsKanji(t *testing.T) {
-	testData(t,
+	testEntries(t,
 		func(test *require.Assertions, db *db.EntriesWriter) {
 			err := db.WriteEntries([]*jmdict.Entry{
 				{
@@ -126,7 +126,7 @@ func TestEntriesWriterExportsKanji(t *testing.T) {
 }
 
 func TestEntriesWriterExportsReading(t *testing.T) {
-	testData(t,
+	testEntries(t,
 		func(test *require.Assertions, db *db.EntriesWriter) {
 			err := db.WriteEntries([]*jmdict.Entry{
 				{
@@ -197,7 +197,7 @@ func TestEntriesWriterExportsReading(t *testing.T) {
 }
 
 func TestEntriesWriterExportsSense(t *testing.T) {
-	testData(t,
+	testEntries(t,
 		func(test *require.Assertions, db *db.EntriesWriter) {
 			err := db.WriteEntries([]*jmdict.Entry{
 				{
@@ -292,7 +292,7 @@ func TestEntriesWriterExportsSense(t *testing.T) {
 }
 
 func TestEntriesWriterExportsSenseGlossary(t *testing.T) {
-	testData(t,
+	testEntries(t,
 		func(test *require.Assertions, db *db.EntriesWriter) {
 			err := db.WriteEntries([]*jmdict.Entry{
 				{
@@ -393,7 +393,7 @@ func TestEntriesWriterExportsSenseGlossary(t *testing.T) {
 }
 
 func TestEntriesWriterExportsSenseSource(t *testing.T) {
-	testData(t,
+	testEntries(t,
 		func(test *require.Assertions, db *db.EntriesWriter) {
 			err := db.WriteEntries([]*jmdict.Entry{
 				{
@@ -499,7 +499,7 @@ func TestEntriesWriterExportsSenseSource(t *testing.T) {
 	)
 }
 
-func testData(t *testing.T, prepare func(test *require.Assertions, db *db.EntriesWriter), eval func(test *require.Assertions, db *sql.DB)) {
+func testEntries(t *testing.T, prepare func(test *require.Assertions, db *db.EntriesWriter), eval func(test *require.Assertions, db *sql.DB)) {
 	testTempDB(t, func(test *require.Assertions, dbFile string) {
 		func() {
 			db, dbErr := db.NewEntriesWriter(dbFile)

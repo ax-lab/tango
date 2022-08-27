@@ -100,16 +100,16 @@ func importNames(outputFile string) {
 	opImportNames.Complete()
 	fmt.Printf("... Loaded %d names\n", len(names))
 
-	// opWriteNames := Start("writing " + NamesDB)
-	// if db, dbErr := db.NewNamesWriter(outputFile); dbErr != nil {
-	// 	ExitWithError("creating %s: %v", NamesDB, dbErr)
-	// } else {
-	// 	defer db.Close()
-	// 	if writeErr := db.WriteNames(names); writeErr != nil {
-	// 		ExitWithError("writing names to %s: %v", NamesDB, writeErr)
-	// 	}
-	// }
-	// opWriteNames.Complete()
+	opWriteNames := Start("writing " + NamesDB)
+	if db, dbErr := db.NewNamesWriter(outputFile); dbErr != nil {
+		ExitWithError("creating %s: %v", NamesDB, dbErr)
+	} else {
+		defer db.Close()
+		if writeErr := db.WriteNames(names); writeErr != nil {
+			ExitWithError("writing names to %s: %v", NamesDB, writeErr)
+		}
+	}
+	opWriteNames.Complete()
 }
 
 type Timer struct {
