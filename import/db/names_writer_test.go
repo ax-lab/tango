@@ -64,6 +64,28 @@ func TestNamesWriterExportsNames(t *testing.T) {
 	)
 }
 
+func TestNamesWriterExportsTags(t *testing.T) {
+	testNames(t,
+		func(test *require.Assertions, db *db.NamesWriter) {
+			err := db.WriteTags(map[string]string{
+				"a": "tag a",
+				"b": "tag b",
+				"c": "tag c",
+			})
+			test.NoError(err)
+		},
+		func(test *require.Assertions, db *sql.DB) {
+			expected := []Data{
+				{"name": "a", "desc": "tag a"},
+				{"name": "b", "desc": "tag b"},
+				{"name": "c", "desc": "tag c"},
+			}
+			actual := testQuery(test, db, "SELECT name, desc FROM tag")
+			test.EqualValues(expected, actual)
+		},
+	)
+}
+
 func TestNamesWriterExportsKanji(t *testing.T) {
 	testNames(t,
 		func(test *require.Assertions, db *db.NamesWriter) {

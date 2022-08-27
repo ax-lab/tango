@@ -50,7 +50,10 @@ func importIfNotExists(outputFile string, callback func(outputFile string)) {
 }
 
 func importEntries(outputFile string) {
-	var entries []*jmdict.Entry
+	var (
+		entries []*jmdict.Entry
+		tags    map[string]string
+	)
 	opImportEntries := Start("importing entries")
 	if input, err := jmdict.Load(jmdict.DefaultFilePath); err != nil {
 		ExitWithError("could not load JMdict data: %v", err)
@@ -65,6 +68,7 @@ func importEntries(outputFile string) {
 			}
 			entries = append(entries, entry)
 		}
+		tags = decoder.Tags
 	}
 
 	opImportEntries.Complete()
@@ -75,6 +79,7 @@ func importEntries(outputFile string) {
 		ExitWithError("creating %s: %v", EntriesDB, dbErr)
 	} else {
 		defer db.Close()
+		db.WriteTags(tags)
 		if writeErr := db.WriteEntries(entries); writeErr != nil {
 			ExitWithError("writing entries to %s: %v", EntriesDB, writeErr)
 		}
@@ -83,7 +88,10 @@ func importEntries(outputFile string) {
 }
 
 func importNames(outputFile string) {
-	var names []*jmnedict.Name
+	var (
+		names []*jmnedict.Name
+		tags  map[string]string
+	)
 	opImportNames := Start("importing names")
 	if input, err := jmnedict.Load(jmnedict.DefaultFilePath); err != nil {
 		ExitWithError("could not load JMnedict data: %v", err)
@@ -98,6 +106,7 @@ func importNames(outputFile string) {
 			}
 			names = append(names, entry)
 		}
+		tags = decoder.Tags
 	}
 
 	opImportNames.Complete()
@@ -108,6 +117,7 @@ func importNames(outputFile string) {
 		ExitWithError("creating %s: %v", NamesDB, dbErr)
 	} else {
 		defer db.Close()
+		db.WriteTags(tags)
 		if writeErr := db.WriteNames(names); writeErr != nil {
 			ExitWithError("writing names to %s: %v", NamesDB, writeErr)
 		}

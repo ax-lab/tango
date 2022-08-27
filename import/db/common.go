@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"sort"
 )
 
 func Open(databaseFile string, schemaSQL string) (*sql.DB, error) {
@@ -62,4 +63,21 @@ func (cmd *WriterCommand) Exec(args ...any) bool {
 		_, cmd.trans.err = cmd.stmt.Exec(args...)
 	}
 	return cmd.trans.err == nil
+}
+
+func writeTags(db *sql.DB, tags map[string]string) error {
+	var names []string
+	for key := range tags {
+		names = append(names, key)
+	}
+	sort.Strings(names)
+
+	tx := BeginTransaction(db)
+
+	insertTag := tx.Prepare(`INSERT INTO tag(name, desc) VALUES (?, ?)`)
+	for _, key := range names {
+		insertTag.Exec(key, tags[key])
+	}
+
+	return tx.Finish()
 }

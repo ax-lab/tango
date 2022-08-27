@@ -14,12 +14,20 @@ type EntriesWriter struct {
 
 func NewEntriesWriter(outputFile string) (*EntriesWriter, error) {
 	db, err := Open(outputFile, `
+		DROP TABLE IF EXISTS tag;
+
 		DROP TABLE IF EXISTS entry_kanji;
 		DROP TABLE IF EXISTS entry_reading;
 		DROP TABLE IF EXISTS entry_sense_source;
 		DROP TABLE IF EXISTS entry_sense_glossary;
 		DROP TABLE IF EXISTS entry_sense;
+
 		DROP TABLE IF EXISTS entry;
+
+		CREATE TABLE tag (
+			name TEXT,
+			desc TEXT
+		);
 
 		CREATE TABLE entry (
 			sequence INTEGER NOT NULL PRIMARY KEY
@@ -99,6 +107,10 @@ func NewEntriesWriter(outputFile string) (*EntriesWriter, error) {
 
 func (writer *EntriesWriter) Close() {
 	writer.db.Close()
+}
+
+func (writer *EntriesWriter) WriteTags(tags map[string]string) error {
+	return writeTags(writer.db, tags)
 }
 
 func (writer *EntriesWriter) WriteEntries(entries []*jmdict.Entry) error {

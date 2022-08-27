@@ -12,8 +12,14 @@ type NamesWriter struct {
 
 func NewNamesWriter(outputFile string) (*NamesWriter, error) {
 	db, err := Open(outputFile, `
+		DROP TABLE IF EXISTS tag;
 		DROP TABLE IF EXISTS name_sense;
 		DROP TABLE IF EXISTS name;
+
+		CREATE TABLE tag (
+			name TEXT,
+			desc TEXT
+		);
 
 		CREATE TABLE name (
 			sequence INTEGER NOT NULL PRIMARY KEY,
@@ -42,6 +48,10 @@ func NewNamesWriter(outputFile string) (*NamesWriter, error) {
 
 func (writer *NamesWriter) Close() {
 	writer.db.Close()
+}
+
+func (writer *NamesWriter) WriteTags(tags map[string]string) error {
+	return writeTags(writer.db, tags)
 }
 
 func (writer *NamesWriter) WriteNames(names []*jmnedict.Name) error {
