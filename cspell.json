@@ -41,6 +41,7 @@
 	],
 	"ignoreRegExpList": [
 		// ignore word terms quoted by backticks
-		"`[^\\s]+`"
+		"`[^\\s]+`",
+		"\\u[0-9A-F]{1,6}"
 	]
 }
