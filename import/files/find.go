@@ -3,7 +3,6 @@ package files
 import (
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -21,7 +20,7 @@ func (e ErrNotFound) Error() string {
 	return fmt.Sprintf("import file `%s` not found", e.File)
 }
 
-func Find(filePath string) (io.Reader, error) {
+func Find(filePath string) (*os.File, error) {
 	currentPath, err := os.Getwd()
 	for err == nil && currentPath != "" {
 		fullPath := filepath.Join(currentPath, filePath)
