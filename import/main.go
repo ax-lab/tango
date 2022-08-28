@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ax-lab/tango/import/db"
+	"github.com/ax-lab/tango/import/frequency"
 	"github.com/ax-lab/tango/import/jmdict"
 	"github.com/ax-lab/tango/import/jmnedict"
 	"github.com/ax-lab/tango/import/kanji"
@@ -17,6 +18,7 @@ const (
 	EntriesDB = "entries.db"
 	NamesDB   = "names.db"
 	KanjiDB   = "kanji.db"
+	FreqDB    = "freq.db"
 )
 
 func main() {
@@ -37,6 +39,7 @@ func main() {
 	importIfNotExists(path.Join(outputDir, EntriesDB), importEntries)
 	importIfNotExists(path.Join(outputDir, NamesDB), importNames)
 	importIfNotExists(path.Join(outputDir, KanjiDB), importKanji)
+	importIfNotExists(path.Join(outputDir, FreqDB), importFrequency)
 }
 
 func importIfNotExists(outputFile string, callback func(outputFile string)) {
@@ -161,6 +164,36 @@ func importKanji(outputFile string) {
 		}
 	}
 	opWriteKanji.Complete()
+}
+
+func importFrequency(outputFile string) {
+	opImportFrequency := Start("importing frequency")
+	jparser, mecab, kanji, err := frequency.LoadPairs(frequency.DefaultPairsFile)
+	if err != nil {
+		ExitWithError("could not load frequency pairs: %v", err)
+	}
+
+	words, chars, err := frequency.LoadInfo(frequency.DefaultInfoFile)
+	if err != nil {
+		ExitWithError("could not load frequency info: %v", err)
+	}
+	opImportFrequency.Complete()
+	fmt.Printf("... Loaded frequency information\n")
+
+	opWriteFrequency := Start("writing " + FreqDB)
+	if db, dbErr := db.NewFrequencyWriter(outputFile); dbErr != nil {
+		ExitWithError("creating %s: %v", FreqDB, dbErr)
+	} else {
+		defer db.Close()
+		db.AddCharInfo(chars)
+		db.AddWordInfo(words)
+		db.AddCharPairs(kanji)
+		db.AddWordPairs(jparser, mecab)
+		if writeErr := db.Write(); writeErr != nil {
+			ExitWithError("writing frequency to %s: %v", FreqDB, writeErr)
+		}
+	}
+	opWriteFrequency.Complete()
 }
 
 type Timer struct {
