@@ -9,33 +9,33 @@ import (
 )
 
 const (
-	DefaultWordsFile   = "vendor/data/frequency/Innocent_Novel_Analysis_120526.zip"
-	DefaultEntriesFile = "vendor/data/frequency/Jap.Freq.2.zip"
+	DefaultPairsFile = "vendor/data/frequency/Innocent_Novel_Analysis_120526.zip"
+	DefaultInfoFile  = "vendor/data/frequency/Jap.Freq.2.zip"
 
-	EntriesFileChars = "Jap.Char.Freq.2.txt"
-	EntriesFileWords = "Jap.Freq.2.txt"
+	InfoFileChars = "Jap.Char.Freq.2.txt"
+	InfoFileWords = "Jap.Freq.2.txt"
 
-	WordsFileJparser = "word_freq_report_jparser.txt"
-	WordsFileMecab   = "word_freq_report_mecab.txt"
-	WordsFileKanji   = "kanji_freq_report.txt"
+	PairsFileJparser = "word_freq_report_jparser.txt"
+	PairsFileMecab   = "word_freq_report_mecab.txt"
+	PairsFileKanji   = "kanji_freq_report.txt"
 )
 
-func LoadEntries(fileName string) (words, chars []*Entry, err error) {
+func LoadInfo(fileName string) (words, chars []*Info, err error) {
 	zipFile, err := files.FindZip(fileName)
 	if err != nil {
 		return nil, nil, err
 	}
 	defer zipFile.Close()
 
-	readEntries := func(path string) (list []*Entry, err error) {
+	readInfo := func(path string) (list []*Info, err error) {
 		input, err := zipFile.Open(path)
 		if err == nil {
 			defer input.Close()
 			scanner := bufio.NewScanner(input)
 			for err == nil && scanner.Scan() {
-				var entry *Entry
+				var entry *Info
 				if text := scanner.Text(); !strings.Contains(text, "BlogFreqPm") {
-					entry, err = ParseEntry(text)
+					entry, err = ParseInfo(text)
 					if entry != nil {
 						list = append(list, entry)
 					}
@@ -48,27 +48,27 @@ func LoadEntries(fileName string) (words, chars []*Entry, err error) {
 		return list, err
 	}
 
-	words, err = readEntries(EntriesFileWords)
+	words, err = readInfo(InfoFileWords)
 	if err != nil {
-		return nil, nil, fmt.Errorf("loading word entries: %v", err)
+		return nil, nil, fmt.Errorf("loading word info: %v", err)
 	}
 
-	chars, err = readEntries(EntriesFileChars)
+	chars, err = readInfo(InfoFileChars)
 	if err != nil {
-		return nil, nil, fmt.Errorf("loading char entries: %v", err)
+		return nil, nil, fmt.Errorf("loading char info: %v", err)
 	}
 
 	return words, chars, nil
 }
 
-func LoadWords(fileName string) (jparser, mecab, kanji []*Word, err error) {
+func LoadPairs(fileName string) (jparser, mecab, kanji []*Pair, err error) {
 	zipFile, err := files.FindZip(fileName)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 	defer zipFile.Close()
 
-	readWords := func(path string) (list []*Word, err error) {
+	readPairs := func(path string) (list []*Pair, err error) {
 		input, err := zipFile.OpenFileByName(path)
 		if err == nil {
 			defer input.Close()
@@ -76,8 +76,8 @@ func LoadWords(fileName string) (jparser, mecab, kanji []*Word, err error) {
 			for err == nil && scanner.Scan() {
 				// files have the byte order mark, so we need to strip it
 				text := strings.TrimLeft(scanner.Text(), "\uFEFF")
-				var word *Word
-				word, err = ParseWord(text)
+				var word *Pair
+				word, err = ParsePair(text)
 				if word != nil {
 					list = append(list, word)
 				}
@@ -89,19 +89,19 @@ func LoadWords(fileName string) (jparser, mecab, kanji []*Word, err error) {
 		return list, err
 	}
 
-	kanji, err = readWords(WordsFileKanji)
+	kanji, err = readPairs(PairsFileKanji)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("loading kanji entries: %v", err)
+		return nil, nil, nil, fmt.Errorf("loading kanji pairs: %v", err)
 	}
 
-	jparser, err = readWords(WordsFileJparser)
+	jparser, err = readPairs(PairsFileJparser)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("loading jparser entries: %v", err)
+		return nil, nil, nil, fmt.Errorf("loading jparser pairs: %v", err)
 	}
 
-	mecab, err = readWords(WordsFileMecab)
+	mecab, err = readPairs(PairsFileMecab)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("loading mecab entries: %v", err)
+		return nil, nil, nil, fmt.Errorf("loading mecab pairs: %v", err)
 	}
 
 	return jparser, mecab, kanji, nil

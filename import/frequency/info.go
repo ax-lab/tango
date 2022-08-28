@@ -8,14 +8,14 @@ import (
 	"unicode"
 )
 
-type Entry struct {
-	Text    string
-	Blog    EntryInfo
-	Twitter EntryInfo
-	News    EntryInfo
+type Info struct {
+	Entry   string
+	Blog    InfoData
+	Twitter InfoData
+	News    InfoData
 }
 
-type EntryInfo struct {
+type InfoData struct {
 	// Raw frequency count.
 	Freq int64
 
@@ -29,16 +29,16 @@ type EntryInfo struct {
 	CDPc string
 }
 
-var reEntryDecimal = regexp.MustCompile(`^\d+(\.\d+)?$`)
+var reValueDecimal = regexp.MustCompile(`^\d+(\.\d+)?$`)
 
-func ParseEntry(input string) (*Entry, error) {
+func ParseInfo(input string) (*Info, error) {
 	line := strings.TrimRightFunc(input, unicode.IsSpace)
 	if line == "" {
 		return nil, nil
 	}
 
 	wrapErr := func(msg string) error {
-		return fmt.Errorf("parsing frequency entry: %s", msg)
+		return fmt.Errorf("parsing frequency info: %s", msg)
 	}
 
 	if fields := strings.Split(line, "\t"); len(fields) == 13 {
@@ -52,14 +52,14 @@ func ParseEntry(input string) (*Entry, error) {
 		}
 
 		parseDec := func(field string) string {
-			if err == nil && !reEntryDecimal.MatchString(field) {
+			if err == nil && !reValueDecimal.MatchString(field) {
 				err = fmt.Errorf("invalid decimal: %s", field)
 			}
 			return field
 		}
 
-		parseInfo := func(index int) EntryInfo {
-			return EntryInfo{
+		parseInfo := func(index int) InfoData {
+			return InfoData{
 				Freq:   parseInt(fields[index+0]),
 				FreqPM: parseDec(fields[index+1]),
 				CD:     parseInt(fields[index+2]),
@@ -71,8 +71,8 @@ func ParseEntry(input string) (*Entry, error) {
 			return nil, nil
 		}
 
-		entry := &Entry{
-			Text:    fields[0],
+		info := &Info{
+			Entry:   fields[0],
 			Blog:    parseInfo(1),
 			Twitter: parseInfo(5),
 			News:    parseInfo(9),
@@ -82,7 +82,7 @@ func ParseEntry(input string) (*Entry, error) {
 			return nil, wrapErr(err.Error())
 		}
 
-		return entry, nil
+		return info, nil
 	}
 
 	return nil, wrapErr("invalid line")
