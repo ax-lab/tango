@@ -1,4 +1,4 @@
-.PHONY: run test import test-import
+.PHONY: run test import test-import json
 
 run:
 	@node serve.js
@@ -28,3 +28,6 @@ test-import:
 
 import:
 	@go run import/main.go -output=data
+
+json:
+	@go run export-json/main.go -output=data/json -import=data

@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/ax-lab/tango/import/jmdict"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 type EntriesWriter struct {

@@ -3,6 +3,8 @@ package db
 import (
 	"database/sql"
 	"sort"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func Open(databaseFile string, schemaSQL string) (*sql.DB, error) {
