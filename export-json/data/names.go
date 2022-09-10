@@ -1,28 +1,125 @@
 package data
 
-func LoadNames(importDir string) ([]Data, error) {
+import (
+	"bufio"
+	"database/sql"
+	"encoding/json"
+	"io"
+	"os"
+	"path"
+)
+
+type Name struct {
+	Sequence int
+	Kanji    string
+	Reading  string
+}
+
+func (tb *Name) Query() string {
+	return "SELECT sequence, kanji, reading FROM name"
+}
+
+func (tb *Name) Read(row *sql.Rows) error {
+	return row.Scan(&tb.Sequence, &tb.Kanji, &tb.Reading)
+}
+
+type NameSense struct {
+	Sequence    int
+	Info        string
+	XRef        string
+	Translation string
+}
+
+func (sense NameSense) MarshalJSON() ([]byte, error) {
+	info := TSV(sense.Info)
+	xref := TSV(sense.XRef)
+	translation := TSV(sense.Translation)
+	return json.Marshal([]any{info, xref, translation})
+}
+
+func EncodeNameAndSenses(output io.Writer, name Name, senses []NameSense) (err error) {
+	out := func(v interface{}) {
+		if err == nil {
+			var bytes []byte
+			bytes, err = json.Marshal(v)
+			if err == nil {
+				_, err = output.Write(bytes)
+			}
+		}
+	}
+
+	var (
+		kanji   = TSV(name.Kanji)
+		reading = TSV(name.Reading)
+	)
+
+	out([]any{name.Sequence, kanji, reading, senses})
+
+	return err
+}
+
+func (tb *NameSense) Query() string {
+	return "SELECT sequence, info, xref, translation FROM name_sense"
+}
+
+func (tb *NameSense) Read(row *sql.Rows) error {
+	return row.Scan(&tb.Sequence, &tb.Info, &tb.XRef, &tb.Translation)
+}
+
+func ExportNames(importDir, exportDir string) error {
 	db := OpenDB(importDir, "names.db")
-	names := db.LoadTable("SELECT * FROM name")
+	defer db.Close()
 
-	bySequence := make(map[int64]Data)
-	for _, row := range names {
-		row["senses"] = make([]Data, 0)
-		row["kanji"] = splitTabs(row["kanji"])
-		row["reading"] = splitTabs(row["reading"])
-		bySequence[row["sequence"].(int64)] = row
+	name := Name{}
+	nameReader := db.ScanTable(&name)
+	defer nameReader.Close()
+
+	sense := NameSense{}
+	senseReader := db.ScanTable(&sense)
+	defer senseReader.Close()
+
+	outputPath := path.Join(exportDir, "names-2.json")
+	outputFile, err := os.Create(outputPath)
+	if err != nil {
+		return err
+	}
+	defer outputFile.Close()
+
+	output := bufio.NewWriter(outputFile)
+
+	if _, err = output.WriteString("[\n"); err != nil {
+		return err
 	}
 
-	senses := db.LoadTable("SELECT * FROM name_sense")
-	for _, row := range senses {
-		name := bySequence[row["sequence"].(int64)]
-		delete(row, "sequence")
-		delete(row, "order")
-		row["info"] = splitTabs(row["info"])
-		row["xref"] = splitTabs(row["xref"])
-		row["translation"] = splitTabs(row["translation"])
-		name["senses"] = append(name["senses"].([]Data), row)
+	var first = true
+	var curSenses []NameSense
+	for nameReader.Next() {
+		for senseReader.Next() {
+			if sense.Sequence != name.Sequence {
+				senseReader.Unget()
+				break
+			}
+			curSenses = append(curSenses, sense)
+		}
+
+		if !first {
+			if _, err = output.WriteString(",\n"); err != nil {
+				return err
+			}
+		}
+		first = false
+
+		if err = EncodeNameAndSenses(output, name, curSenses); err != nil {
+			return err
+		}
+		curSenses = curSenses[:0]
 	}
 
-	err := db.Done()
-	return names, err
+	if _, err = output.WriteString("\n]"); err != nil {
+		return err
+	}
+
+	output.Flush()
+
+	return db.Done()
 }

@@ -3,7 +3,7 @@ package data
 import (
 	"database/sql"
 	"path"
-	"strings"
+	"sync/atomic"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -12,13 +12,38 @@ type Data map[string]interface{}
 
 type Database struct {
 	inner *sql.DB
-	err   error
+
+	errF int32
+	err  error
 }
 
 func OpenDB(dir, file string) *Database {
 	filePath := path.Join(dir, file)
 	db, err := sql.Open("sqlite3", filePath)
-	return &Database{db, err}
+
+	out := &Database{inner: db, err: nil}
+	out.FlagError(err)
+	return out
+}
+
+func (db *Database) Close() {
+	if db.inner != nil {
+		db.inner.Close()
+		db.inner = nil
+	}
+}
+
+func (db *Database) FlagError(err error) bool {
+	if err != nil {
+		if atomic.CompareAndSwapInt32(&db.errF, 0, 1) {
+			db.err = err
+		}
+	}
+	return db.HasError()
+}
+
+func (db *Database) HasError() bool {
+	return atomic.LoadInt32(&db.errF) != 0
 }
 
 func (db *Database) Done() error {
@@ -26,52 +51,66 @@ func (db *Database) Done() error {
 		db.inner.Close()
 		db.inner = nil
 	}
-	return db.err
+	if db.HasError() {
+		return db.err
+	}
+	return nil
 }
 
-func (db *Database) LoadTable(sql string, args ...any) (out []Data) {
-	if db.err != nil {
-		return
+type Scanner interface {
+	Query() string
+	Read(rows *sql.Rows) error
+}
+
+type ScannerResult struct {
+	database *Database
+	scanner  Scanner
+	rows     *sql.Rows
+	hasNext  bool
+}
+
+func (res *ScannerResult) Close() {
+	if res.rows != nil {
+		res.rows.Close()
+		res.rows = nil
+	}
+}
+
+func (res *ScannerResult) Next() bool {
+	if res.hasNext {
+		res.hasNext = false
+		return true
 	}
 
-	rows, err := db.inner.Query(sql, args...)
-	if err != nil {
-		db.err = err
-		return
-	}
-
-	defer rows.Close()
-
-	cols, err := rows.Columns()
-	if err != nil {
-		db.err = err
-		return
-	}
-
-	rowBuffer := make([]any, len(cols))
-	rowBufferPtr := make([]any, len(cols))
-	for i := range rowBuffer {
-		rowBufferPtr[i] = &rowBuffer[i]
-	}
-
-	for rows.Next() {
-		if db.err = rows.Scan(rowBufferPtr...); db.err != nil {
-			return
+	if res.rows != nil && res.rows.Next() {
+		if err := res.scanner.Read(res.rows); res.database.FlagError(err) {
+			return false
 		}
-		row := make(Data)
-		for i, name := range cols {
-			row[name] = rowBuffer[i]
-		}
-		out = append(out, row)
+		return true
 	}
 
+	return false
+}
+
+func (res *ScannerResult) Unget() {
+	res.hasNext = true
+}
+
+func (db *Database) ScanTable(scanner Scanner) *ScannerResult {
+	out := &ScannerResult{
+		database: db,
+		scanner:  scanner,
+	}
+
+	if db.HasError() {
+		return out
+	}
+
+	rows, err := db.inner.Query(scanner.Query())
+	if db.FlagError(err) {
+		return out
+	}
+
+	out.rows = rows
 	return out
-}
-
-func splitTabs(value interface{}) []string {
-	input := value.(string)
-	if input == "" {
-		return nil
-	}
-	return strings.Split(input, "\t")
 }
