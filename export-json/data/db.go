@@ -3,7 +3,6 @@ package data
 import (
 	"database/sql"
 	"path"
-	"sync/atomic"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -12,9 +11,7 @@ type Data map[string]interface{}
 
 type Database struct {
 	inner *sql.DB
-
-	errF int32
-	err  error
+	err   error
 }
 
 func OpenDB(dir, file string) *Database {
@@ -35,26 +32,17 @@ func (db *Database) Close() {
 
 func (db *Database) FlagError(err error) bool {
 	if err != nil {
-		if atomic.CompareAndSwapInt32(&db.errF, 0, 1) {
-			db.err = err
-		}
+		db.err = err
 	}
-	return db.HasError()
+	return db.err != nil
+}
+
+func (db *Database) Error() error {
+	return db.err
 }
 
 func (db *Database) HasError() bool {
-	return atomic.LoadInt32(&db.errF) != 0
-}
-
-func (db *Database) Done() error {
-	if db.inner != nil {
-		db.inner.Close()
-		db.inner = nil
-	}
-	if db.HasError() {
-		return db.err
-	}
-	return nil
+	return db.err != nil
 }
 
 type Scanner interface {
