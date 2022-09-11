@@ -37,7 +37,8 @@
 		"*.lock",
 		"node_modules/**",
 		"package-lock.json",
-		"vendor/**"
+		"vendor/**",
+		"data-tables/**"
 	],
 	"ignoreRegExpList": [
 		// ignore word terms quoted by backticks

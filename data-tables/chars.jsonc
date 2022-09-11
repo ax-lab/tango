@@ -1,0 +1,165 @@
+// Character classification tables
+// ===============================
+//
+// Provides Unicode codepoint tables and ranges for different character
+// categories. The main goal of this list is to provide support for text
+// segmentation.
+//
+// See https://www.unicode.org/charts/ for reference.
+{
+	"space": {
+		"tables": [
+			// Basic ASCII:
+			" \t\r\n",
+			"\u000B", // VERTICAL TABULATION
+
+			// Additional unicode spaces:
+			"\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F",
+			"\u2028\u2029", // LINE SEPARATOR and PARAGRAPH SEPARATOR
+
+			// U+3000  `　`  IDEOGRAPHIC SPACE
+			"\u3000"
+		]
+	},
+
+	// All kanji characters (not limited to Japanese)
+	"kanji": {
+		// Kanji ranges more or less in order of common usage
+		"ranges": [
+			"4E00-9FFF",   // CJK Unified Ideographs (`一` to `龯` -- common kanji)
+			"3400-4DBF",   // CJK Unified Ideographs Extension A (`㐀` to `䶵` -- rare kanji)
+			"F900-FAFF",   // CJK Compatibility Ideographs (`豈`, `欄`)
+			"20000-2A6DF", // CJK Unified Ideographs Extension B (`𠀀` to `𪛖`)
+			"2A700-2B738", // CJK Unified Ideographs Extension C (`𪜀` to `𫜴`)
+			"2B740-2B81D", // CJK Unified Ideographs Extension D (`𫝀` to `𫠝`)
+			"2B820-2CEA1", // CJK Unified Ideographs Extension E (most don't render)
+			"2CEB0-2EBE0", // CJK Unified Ideographs Extension F
+			"30000-3134A", // CJK Unified Ideographs Extension G
+
+			// all of these mapping to other CJK ranges
+			"2F800-2FA1F"  // CJK Compatibility Ideographs Supplement (roundtrip compatibility)
+		]
+	},
+
+	// Characters that are not exactly kanji but often occur in a word
+	"kanji_mark": {
+		"tables": [
+			"々〆〇"
+		]
+	},
+
+	// Kanji radicals
+	"radical": {
+		"ranges": [
+			"2E80-2EFF", // CJK Radicals Supplement
+			"2F00-2FDF", // Kangxi Radicals
+			"31C0-31EF"  // CJK Strokes
+		]
+	},
+
+	// ASCII ranges that are used for romaji to kana transliteration
+	"romaji": {
+		"tables": ["-", "âêîôûÂÊÎÔÛāēīōūĀĒĪŌŪ"],
+		"ranges": ["A-Z", "a-z", "0-9"]
+	},
+
+	// Additional ASCII characters that have fullwidth mappings
+	"ascii": {
+		"tables": ["`~!@#$%^&*()-_=+[]{};:<>,./?'\"|\\"]
+	},
+
+	// Fullwidth romaji characters
+	"roman": {
+		"ranges": ["０-９", "Ａ-Ｚ", "ａ-ｚ"]
+	},
+
+	// Fullwidth punctuation
+	"fullwidth": {
+		"ranges": ["！-／", "：-＠", "［-｀", "｛-～"],
+		"tables": [
+			"！＂＃＄％＆＇（）＊＋，－．／",
+			"：；＜＝＞？＠",
+			"［＼］＾＿｀",
+			"｛｜｝～｟｠",
+			// From CJK Symbols and Punctuation
+			"、。〃〈〉《》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟"
+		]
+	},
+
+	// All kana ranges
+	"kana": {
+		"include": ["hiragana", "katakana", "kana_mark", "halfwidth"]
+	},
+
+	// Hiragana characters
+	"hiragana": {
+		// Note: Hiragana range (3040–309F)
+
+		// U+3041  "ぁ"  HIRAGANA LETTER SMALL A
+		// U+3096  "ゖ"  HIRAGANA LETTER SMALL KE
+		"ranges": ["3041-3096"],
+
+		// U+309F  "ゟ"  HIRAGANA DIGRAPH YORI
+		// U+1B001 "𛀁"  HIRAGANA LETTER ARCHAIC YE
+		"tables": ["ゟ𛀁"]
+	},
+
+	// Katakana characters, except halfwidth
+	"katakana": {
+		// Note: Katakana range (30A0–30FF)
+
+		// U+30A1  "ァ"  KATAKANA LETTER SMALL A
+		// U+30FA  "ヺ"  KATAKANA LETTER VO
+		// U+31F0  "ㇰ"  KATAKANA LETTER SMALL KU
+		// U+31FF  "ㇿ"  KATAKANA LETTER SMALL RO
+		"ranges": [
+			"30A1-30FA",
+			"31F0-31FF"  // KATAKANA PHONETIC EXTENSIONS (31F0–31FF)
+		],
+
+		// U+30FF  "ヿ"  KATAKANA DIGRAPH KOTO
+		"tables": ["ヿ"]
+	},
+
+	// Codepoints that are part of the kana range, but may require special
+	// consideration.
+	"kana_mark": {
+		"tables":[
+			// U+30FC  "ー"  KATAKANA-HIRAGANA PROLONGED SOUND MARK
+			// U+30FB  "・"  KATAKANA MIDDLE DOT (→ U+00B7 · mid)
+			// U+30A0  "゠"  KATAKANA-HIRAGANA DOUBLE HYPHEN
+			"・ー゠",
+			// U+30FD  "ヽ"  KATAKANA ITERATION MARK
+			// U+30FE  "ヾ"  KATAKANA VOICED ITERATION MARK (≡ U+30FD + U+3099)
+			"\u30FD\u30FE",
+			// U+3099  COMBINING KATAKANA-HIRAGANA VOICED SOUND MARK
+			// U+309A  COMBINING KATAKANA-HIRAGANA SEMI-VOICED SOUND MARK
+			"\u3099\u309A",
+			// U+309B  ゙   KATAKANA-HIRAGANA VOICED SOUND MARK (≈ U+0020 + U+3099)
+			// U+309C  ゚   KATAKANA-HIRAGANA SEMI-VOICED SOUND MARK (≈ U+0020 + U+309A)
+			// U+309D  ゝ  HIRAGANA ITERATION MARK
+			// U+309E  ゞ  HIRAGANA VOICED ITERATION MARK (≡ U+309D U+3099)
+			"\u309B\u309C\u309D\u309E"
+		]
+	},
+
+	// Halfwidth katakana characters and marks
+	"halfwidth": {
+		// U+FF65  "･"  HALFWIDTH KATAKANA MIDDLE DOT
+		// U+FF66  "ｦ"  HALFWIDTH KATAKANA LETTER WO
+		// U+FF6F  "ｯ"  HALFWIDTH KATAKANA LETTER SMALL TU
+		// U+FF70  "ｰ"  HALFWIDTH KATAKANA-HIRAGANA PROLONGED SOUND MARK
+		// U+FF71  "ｱ"  HALFWIDTH KATAKANA LETTER A
+		// U+FF9D  "ﾝ"  HALFWIDTH KATAKANA LETTER N
+		// U+FF9E  ﾞ  HALFWIDTH KATAKANA VOICED SOUND MARK (≈ <narrow> U+3099)
+		// U+FF9F  ﾟ  HALFWIDTH KATAKANA SEMI-VOICED SOUND MARK (≈ <narrow> U+309A)
+		"ranges": ["FF65-FF9F"],
+		"tables": ["｡｢｣､"]
+	},
+
+	// Additional Japanese/fullwidth symbols
+	"symbols": {
+		"ranges": ["￠-￮", "㈀-㋾", "㌀-㏿"],
+		"tables": ["〳〴〵〻〼〰〽〱〲〄〒〓〠〶〷〾〿"]
+	}
+}

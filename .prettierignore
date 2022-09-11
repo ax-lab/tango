@@ -10,3 +10,6 @@ tsconfig.json
 node_modules
 target
 build
+
+# data files are formatted by hand for better readability
+data-tables
