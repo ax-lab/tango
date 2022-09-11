@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"sort"
 )
 
 func ExportNames(importDir, exportDir string) error {
@@ -21,6 +22,19 @@ func ExportNames(importDir, exportDir string) error {
 	senseReader := db.ScanTable(&sense)
 	defer senseReader.Close()
 
+	var (
+		entries = make([]string, 0)
+		indexes = make(map[string][]int)
+	)
+
+	pushEntry := func(entry string, sequence int) {
+		index := indexes[entry]
+		if len(index) == 0 {
+			entries = append(entries, entry)
+		}
+		indexes[entry] = append(index, sequence)
+	}
+
 	var curSenses []NameSense
 	for nameReader.Next() {
 		for senseReader.Next() {
@@ -35,12 +49,28 @@ func ExportNames(importDir, exportDir string) error {
 		fileName := fmt.Sprintf("names/name-%03d.json", index)
 
 		var (
-			kanji   = TSV(name.Kanji)
-			reading = TSV(name.Reading)
+			sequence = name.Sequence
+			kanji    = TSV(name.Kanji)
+			reading  = TSV(name.Reading)
 		)
-		out.AppendToFile(fileName, []any{name.Sequence, kanji, reading, curSenses})
+
+		for _, it := range kanji {
+			pushEntry(it, sequence)
+		}
+		for _, it := range reading {
+			pushEntry(it, sequence)
+		}
+
+		out.AppendToFile(fileName, []any{sequence, kanji, reading, curSenses})
 
 		curSenses = curSenses[:0]
+	}
+
+	sort.Strings(entries)
+	for _, it := range entries {
+		char := (([]rune)(it))[0] % 0x100
+		file := fmt.Sprintf("names-index/name-%02X.json", char)
+		out.AppendToFile(file, []any{it, indexes[it]})
 	}
 
 	tag := Tag{}

@@ -41,6 +41,13 @@ func (w *DataWriter) Close() {
 	w.files = nil
 }
 
+func (w *DataWriter) AppendRaw(fileName string, data string) {
+	if file, _ := w.getFile(fileName); file != nil {
+		file.WriteString(data)
+		file.closed = true
+	}
+}
+
 func (w *DataWriter) WriteToFile(fileName string, item any) {
 	w.doWriteToFile(fileName, item, "", "")
 }
