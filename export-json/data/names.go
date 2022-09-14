@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+
+	"github.com/ax-lab/tango/common"
 )
 
 func ExportNames(importDir, exportDir string) error {
@@ -28,11 +30,12 @@ func ExportNames(importDir, exportDir string) error {
 	)
 
 	pushEntry := func(entry string, sequence int) {
-		index := indexes[entry]
+		key := common.KanaToCommonHiragana(entry)
+		index := indexes[key]
 		if len(index) == 0 {
-			entries = append(entries, entry)
+			entries = append(entries, key)
 		}
-		indexes[entry] = append(index, sequence)
+		indexes[key] = append(index, sequence)
 	}
 
 	var curSenses []NameSense
