@@ -126,16 +126,3 @@ func (sense NameSense) MarshalJSON() ([]byte, error) {
 	translation := TSV(sense.Translation)
 	return json.Marshal([]any{info, xref, translation})
 }
-
-type Tag struct {
-	Name string
-	Desc string
-}
-
-func (tb *Tag) Query() string {
-	return "SELECT name, desc FROM tag"
-}
-
-func (tb *Tag) Read(row *sql.Rows) error {
-	return row.Scan(&tb.Name, &tb.Desc)
-}

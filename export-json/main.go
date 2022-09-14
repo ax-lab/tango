@@ -19,10 +19,19 @@ func main() {
 
 	fmt.Printf("Exporting JSON data from `%s` to `%s`...\n", importDir, outputDir)
 
+	var err error
+
 	opLoadNames := common.Start("exporting names")
-	err := data.ExportNames(importDir, outputDir)
+	err = data.ExportNames(importDir, outputDir)
 	if err != nil {
 		common.ExitWithError("exporting names: %v", err)
 	}
 	opLoadNames.Complete()
+
+	opLoadEntries := common.Start("exporting entries")
+	err = data.ExportEntries(importDir, outputDir)
+	if err != nil {
+		common.ExitWithError("exporting entries: %v", err)
+	}
+	opLoadEntries.Complete()
 }
